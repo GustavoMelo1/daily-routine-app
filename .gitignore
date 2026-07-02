@@ -4,3 +4,4 @@ venv
 /.venv
 
 db/rotina.db
+db/database.sql
