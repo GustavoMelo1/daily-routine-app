@@ -3,6 +3,7 @@ id INTEGER PRIMARY KEY,
 data TEXT UNIQUE, 
 minutos_estudados INTEGER,
 frase_do_dia TEXT,
+autor_frase TEXT,
 tipo TEXT );
 
 CREATE TABLE tarefas(
@@ -20,3 +21,10 @@ total_minutos_estudados INTEGER,
 percentual_tarefas_cumpridas REAL,
 streak_Dias INT,
 observacoes TEXT);
+
+CREATE TABLE metas_semanais(
+id INTEGER PRIMARY KEY,
+semana_inicio TEXT,
+semana_fim TEXT,
+descricao TEXT,
+cumprida INTEGER);
