@@ -5,3 +5,5 @@ venv
 
 db/rotina.db
 db/database.sql
+
+__pycache__/
