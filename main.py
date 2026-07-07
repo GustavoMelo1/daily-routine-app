@@ -11,13 +11,20 @@ class Dia(BaseModel):
     autor_frase: str
     tipo: str
 
+class Tarefa(BaseModel):
+    dia_id: int
+    descricao: str
+    cumprida: int
+
 @app.get("/dias/{data}")
 def dias(data: str):
-    """Busca a tabela dias no BANCO pela DATA"""
+    """Busca a tabela DIAS no BANCO pela DATA"""
     con = sqlite3.connect("db/rotina.db")
     cur = con.cursor()
-    cur.execute("SELECT dias.data,dias.frase_do_dia, tarefas.descricao, tarefas.cumprida FROM dias INNER JOIN tarefas ON dias.id = tarefas.dia_id WHERE dias.data = ? ", (data,))
-    return cur.fetchall()
+    cur.execute("SELECT dias.data,dias.frase_do_dia, tarefas.descricao, tarefas.cumprida FROM dias LEFT JOIN tarefas ON dias.id = tarefas.dia_id WHERE dias.data = ? ", (data,))
+    resultado = cur.fetchall()
+    con.close()
+    return resultado
 
 @app.post("/dias")
 def create_dia(dia: Dia):
@@ -38,3 +45,23 @@ def delete_dia(data: str):
     con.commit()
     con.close()
     return {"Status": "Dia Deletado"}
+
+@app.post("/tarefas")
+def create_tarefas(tarefa: Tarefa):
+    """Cria uma nova TAREFA no BANCO"""
+    con = sqlite3.connect("db/rotina.db")
+    cur = con.cursor()
+    cur.execute("INSERT INTO tarefas (dia_id, descricao, cumprida) VALUES (?, ?, ? )", (tarefa.dia_id, tarefa.descricao, tarefa.cumprida))
+    con.commit()
+    con.close()
+    return {"Status": "Tarefa Criada"}
+
+@app.delete("/tarefas/{id}")
+def delete_tarefa (id: int):
+    """Deleta a TAREFA do BANCO"""
+    con = sqlite3.connect("db/rotina.db")
+    cur = con.cursor()
+    cur.execute("DELETE FROM tarefas WHERE id = ?", (id,))
+    con.commit()
+    con.close()
+    return {"Status": "Tarefa Deletada"}
