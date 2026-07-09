@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 import sqlite3
 from pydantic import BaseModel
+from fastapi import HTTPException
+
+
 
 app = FastAPI()
 
@@ -65,3 +68,5 @@ def delete_tarefa (id: int):
     con.commit()
     con.close()
     return {"Status": "Tarefa Deletada"}
+
+raise HTTPException(status_code=400, detail="mensagem clara aqui")
