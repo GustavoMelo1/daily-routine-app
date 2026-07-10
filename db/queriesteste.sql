@@ -14,3 +14,6 @@ SELECT SUM(minutos_estudados) FROM dias;
 SELECT AVG(minutos_estudados) FROM dias;
 
 SELECT MAX(minutos_estudados), MIN(minutos_estudados) FROM dias; 
+
+SELECT SUM(minutos_estudados) FROM dias 
+WHERE data BETWEEN '2026-06-29' AND '2026-07-05';
