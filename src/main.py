@@ -34,10 +34,14 @@ def create_dia(dia: Dia):
     """Cria um novo DIA no BANCO"""
     con = sqlite3.connect("db/rotina.db")
     cur = con.cursor()
-    cur.execute("INSERT INTO dias (data, minutos_estudados, frase_do_dia, autor_frase, tipo) VALUES(?, ?, ?, ?, ?)", (dia.data, dia.minutos_estudados, dia.frase_do_dia, dia.autor_frase, dia.tipo))
-    con.commit()
-    con.close()
-    return {"Status": "Dia novo Criado"}
+    try:
+        cur.execute("INSERT INTO dias (data, minutos_estudados, frase_do_dia, autor_frase, tipo) VALUES(?, ?, ?, ?, ?)", (dia.data, dia.minutos_estudados, dia.frase_do_dia, dia.autor_frase, dia.tipo))
+        con.commit()
+        con.close()
+        return {"Status": "Dia novo Criado"}
+    except sqlite3.IntegrityError:
+        con.close()
+        raise HTTPException(status_code=400, detail="Dia ja existente")
 
 @app.delete("/dias/{data}")
 def delete_dia(data: str):
@@ -73,5 +77,3 @@ def delete_tarefa (id: int):
     con.commit()
     con.close()
     return {"Status": "Tarefa Deletada"}
-
-raise HTTPException(status_code=400, detail="mensagem clara aqui")
