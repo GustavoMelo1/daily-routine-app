@@ -3,8 +3,6 @@ import sqlite3
 from pydantic import BaseModel
 from fastapi import HTTPException
 
-
-
 app = FastAPI()
 
 class Dia(BaseModel):
@@ -65,8 +63,9 @@ def create_tarefas(tarefa: Tarefa):
     cur = con.cursor()
     cur.execute("INSERT INTO tarefas (dia_id, descricao, cumprida) VALUES (?, ?, ? )", (tarefa.dia_id, tarefa.descricao, tarefa.cumprida))
     con.commit()
+    new_id = cur.lastrowid
     con.close()
-    return {"Status": "Tarefa Criada"}
+    return {"id": new_id, "Status": "Tarefa Criada"}
 
 @app.delete("/tarefas/{id}")
 def delete_tarefa (id: int):
