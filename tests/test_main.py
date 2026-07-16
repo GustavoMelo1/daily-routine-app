@@ -38,3 +38,20 @@ def test_criar_tarefa_sucesso():
     assert resposta.status_code == 200
 
     client.delete(f"/tarefas/{resposta.json()['id']}")
+
+def test_deletar_dia_sucesso():
+    client.post("/dias", json={
+        "data": "2026-09-01",
+        "minutos_estudados": 10,
+        "frase_do_dia": "teste",
+        "autor_frase": "teste",
+        "tipo": "normal"
+    })
+    delete = client.delete("/dias/2026-09-01")
+
+    assert delete.status_code == 200
+
+def test_deletar_dia_inexistente():
+    resposta = client.delete("/dias/2027-10-01")
+
+    assert resposta.status_code == 404
