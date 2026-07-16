@@ -73,6 +73,10 @@ def delete_tarefa (id: int):
     con = sqlite3.connect("db/rotina.db")
     cur = con.cursor()
     cur.execute("DELETE FROM tarefas WHERE id = ?", (id,))
+    if cur.rowcount == 0:
+        con.close()
+        raise HTTPException(status_code=404,detail="Tarefa não encontrado")
+
     con.commit()
     con.close()
-    return {"Status": "Tarefa Deletada"}
+    return {"Status": "Tarefa Deletado"}
