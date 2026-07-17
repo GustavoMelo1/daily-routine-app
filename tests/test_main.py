@@ -66,3 +66,20 @@ def test_posttarefa():
     assert resposta.status_code == 200
 
     client.delete(f"/tarefas/{resposta.json()['id']}")
+
+def test_deletetarefa():
+    resposta = client.post("/tarefas", json={
+        "dia_id" : 1,
+        "descricao": "teste",
+        "cumprida": 1
+    })
+
+    tarefa_id = resposta.json()['id']
+    delete = client.delete(f"/tarefas/{tarefa_id}")
+
+    assert delete.status_code == 200
+    
+def test_deletetarefa_404():
+    resposta = client.delete("/tarefas/99999999")
+
+    assert resposta.status_code == 404
