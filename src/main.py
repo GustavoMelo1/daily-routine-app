@@ -75,8 +75,8 @@ def delete_tarefa (id: int):
     cur.execute("DELETE FROM tarefas WHERE id = ?", (id,))
     if cur.rowcount == 0:
         con.close()
-        raise HTTPException(status_code=404,detail="Tarefa não encontrado")
+        raise HTTPException(status_code=404,detail="Tarefa não encontrada")
 
     con.commit()
     con.close()
-    return {"Status": "Tarefa Deletado"}
+    return {"Status": "Tarefa Deletada"}
