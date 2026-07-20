@@ -24,10 +24,13 @@ def dias(data: str):
     cur = con.cursor()
     cur.execute("SELECT dias.data,dias.frase_do_dia, tarefas.descricao, tarefas.cumprida FROM dias LEFT JOIN tarefas ON dias.id = tarefas.dia_id WHERE dias.data = ? ", (data,))
     resultado = cur.fetchall()
+    if not resultado:
+        con.close()
+        raise HTTPException(status_code=404,detail="Dia não encontrado") 
     con.close()
     return resultado
 
-@app.post("/dias")
+@app.post("/dias", status_code=201)
 def create_dia(dia: Dia):
     """Cria um novo DIA no BANCO"""
     con = sqlite3.connect("db/rotina.db")
@@ -56,7 +59,7 @@ def delete_dia(data: str):
     con.close()
     return {"Status": "Dia Deletado"}
 
-@app.post("/tarefas")
+@app.post("/tarefas", status_code=201)
 def create_tarefas(tarefa: Tarefa):
     """Cria uma nova TAREFA no BANCO"""
     con = sqlite3.connect("db/rotina.db")
