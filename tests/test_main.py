@@ -1,19 +1,23 @@
 from fastapi.testclient import TestClient
 from src.main import app
+import pytest
 
-client = TestClient(app)
 
-def test_getdia():
+@pytest.fixture
+def client():
+    return TestClient(app)
+
+def test_getdia(client):
     """Busca um dia que ja existe no banco e confere"""
     resposta = client.get("/dias/2026-07-02")
     assert resposta.status_code == 200
 
-def test_getdia_404():
+def test_getdia_404(client):
     """Busca um dia que nunca existiu e confere"""
     resposta = client.get("/dias/2099-01-01")
     assert resposta.status_code == 404
 
-def test_postdia():
+def test_postdia(client):
     """Cria um dia novo (nao existia) confere, deleta logo em seguida"""
     resposta = client.post("/dias", json={
         "data": "2026-08-01",
@@ -26,7 +30,7 @@ def test_postdia():
 
     client.delete("/dias/2026-08-01")
 
-def test_postdia_dup():
+def test_postdia_dup(client):
     """Tenta criar um dia duplicado e confere se a API recusa"""
     resposta = client.post("/dias", json={
         "data": "2026-07-02",
@@ -37,7 +41,7 @@ def test_postdia_dup():
     })
     assert resposta.status_code == 400
 
-def test_deletedia():
+def test_deletedia(client):
     """Cria um dia novo so por criar, deleta ele, e confere"""
     client.post("/dias", json={
         "data": "2026-09-01",
@@ -50,13 +54,13 @@ def test_deletedia():
 
     assert delete.status_code == 200
 
-def test_deletedia_404():
+def test_deletedia_404(client):
     """Tenta deletar uma data que nunca existiu"""
     resposta = client.delete("/dias/2027-10-01")
 
     assert resposta.status_code == 404
 
-def test_posttarefa():
+def test_posttarefa(client):
     """Cria uma tarefa nova, deleta ela usando o ID que a propria API gerou na criação."""
     resposta = client.post("/tarefas", json={
         "dia_id": 1,
@@ -67,7 +71,7 @@ def test_posttarefa():
 
     client.delete(f"/tarefas/{resposta.json()['id']}")
 
-def test_deletetarefa():
+def test_deletetarefa(client):
     resposta = client.post("/tarefas", json={
         "dia_id" : 1,
         "descricao": "teste",
@@ -79,7 +83,7 @@ def test_deletetarefa():
 
     assert delete.status_code == 200
     
-def test_deletetarefa_404():
+def test_deletetarefa_404(client):
     resposta = client.delete("/tarefas/99999999")
 
     assert resposta.status_code == 404
