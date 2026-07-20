@@ -11,7 +11,7 @@ def test_getdia():
 def test_getdia_404():
     """Busca um dia que nunca existiu e confere"""
     resposta = client.get("/dias/2099-01-01")
-    assert resposta.status_code == 200
+    assert resposta.status_code == 404
 
 def test_postdia():
     """Cria um dia novo (nao existia) confere, deleta logo em seguida"""
@@ -22,7 +22,7 @@ def test_postdia():
         "autor_frase": "teste",
         "tipo": "normal"
     })
-    assert resposta.status_code == 200
+    assert resposta.status_code == 201
 
     client.delete("/dias/2026-08-01")
 
@@ -63,7 +63,7 @@ def test_posttarefa():
         "descricao": "teste",
         "cumprida": 1
     })
-    assert resposta.status_code == 200
+    assert resposta.status_code == 201
 
     client.delete(f"/tarefas/{resposta.json()['id']}")
 
