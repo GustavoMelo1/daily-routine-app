@@ -7,6 +7,14 @@ import pytest
 def client():
     return TestClient(app)
 
+@pytest.fixture
+def dia_payload():
+    return {
+        "minutos_estudados": 10,
+        "frase_do_dia": "teste",
+        "autor_frase": "teste",
+        "tipo": "normal"}
+
 def test_getdia(client):
     """Busca um dia que ja existe no banco e confere"""
     resposta = client.get("/dias/2026-07-02")
@@ -17,15 +25,9 @@ def test_getdia_404(client):
     resposta = client.get("/dias/2099-01-01")
     assert resposta.status_code == 404
 
-def test_postdia(client):
+def test_postdia(client, dia_payload):
     """Cria um dia novo (nao existia) confere, deleta logo em seguida"""
-    resposta = client.post("/dias", json={
-        "data": "2026-08-01",
-        "minutos_estudados": 10,
-        "frase_do_dia": "teste",
-        "autor_frase": "teste",
-        "tipo": "normal"
-    })
+    resposta = client.post("/dias", json=dia_payload)
     assert resposta.status_code == 201
 
     client.delete("/dias/2026-08-01")
