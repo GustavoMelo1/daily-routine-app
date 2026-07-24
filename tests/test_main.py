@@ -33,27 +33,17 @@ def test_postdia(client, dia_payload):
 
     client.delete("/dias/2026-08-01")
 
-def test_postdia_dup(client):
+def test_postdia_dup(client, dia_payload):
     """Tenta criar um dia duplicado e confere se a API recusa"""
-    resposta = client.post("/dias", json={
-        "data": "2026-07-02",
-        "minutos_estudados": 10,
-        "frase_do_dia": "teste",
-        "autor_frase": "teste",
-        "tipo": "normal"
-    })
+    dicionario = {**dia_payload, "data": "2026-07-02"}
+    resposta = client.post("/dias", json = dicionario)
     assert resposta.status_code == 400
 
-def test_deletedia(client):
+def test_deletedia(client, dia_payload):
     """Cria um dia novo so por criar, deleta ele, e confere"""
-    client.post("/dias", json={
-        "data": "2026-09-01",
-        "minutos_estudados": 10,
-        "frase_do_dia": "teste",
-        "autor_frase": "teste",
-        "tipo": "normal"
-    })
-    delete = client.delete("/dias/2026-09-01")
+    dicionario = {**dia_payload, "data": "2026-08-01"}
+    client.post("/dias", json = dicionario)
+    delete = client.delete("/dias/2026-08-01")
 
     assert delete.status_code == 200
 
