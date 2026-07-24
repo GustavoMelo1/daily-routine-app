@@ -27,7 +27,8 @@ def test_getdia_404(client):
 
 def test_postdia(client, dia_payload):
     """Cria um dia novo (nao existia) confere, deleta logo em seguida"""
-    resposta = client.post("/dias", json=dia_payload)
+    dicionario = {**dia_payload, "data": "2026-08-01"}  
+    resposta = client.post("/dias", json = dicionario)
     assert resposta.status_code == 201
 
     client.delete("/dias/2026-08-01")
