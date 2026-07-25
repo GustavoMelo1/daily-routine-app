@@ -8,12 +8,19 @@ def client():
     return TestClient(app)
 
 @pytest.fixture
-def dia_payload():
+def dicionario_dias():
     return {
         "minutos_estudados": 10,
         "frase_do_dia": "teste",
         "autor_frase": "teste",
         "tipo": "normal"}
+
+@pytest.fixture
+def dicionario_tarefas():
+    return {
+        "dia_id": 1,
+        "descricao": "teste",
+        "cumprida": 1}
 
 def test_getdia(client):
     """Busca um dia que ja existe no banco e confere"""
@@ -25,23 +32,23 @@ def test_getdia_404(client):
     resposta = client.get("/dias/2099-01-01")
     assert resposta.status_code == 404
 
-def test_postdia(client, dia_payload):
+def test_postdia(client, dicionario_dias):
     """Cria um dia novo (nao existia) confere, deleta logo em seguida"""
-    dicionario = {**dia_payload, "data": "2026-08-01"}  
+    dicionario = {**dicionario_dias, "data": "2026-08-01"}  
     resposta = client.post("/dias", json = dicionario)
     assert resposta.status_code == 201
 
     client.delete("/dias/2026-08-01")
 
-def test_postdia_dup(client, dia_payload):
+def test_postdia_dup(client, dicionario_dias):
     """Tenta criar um dia duplicado e confere se a API recusa"""
-    dicionario = {**dia_payload, "data": "2026-07-02"}
+    dicionario = {**dicionario_dias, "data": "2026-07-02"}
     resposta = client.post("/dias", json = dicionario)
     assert resposta.status_code == 400
 
-def test_deletedia(client, dia_payload):
+def test_deletedia(client, dicionario_dias):
     """Cria um dia novo so por criar, deleta ele, e confere"""
-    dicionario = {**dia_payload, "data": "2026-08-01"}
+    dicionario = {**dicionario_dias, "data": "2026-08-01"}
     client.post("/dias", json = dicionario)
     delete = client.delete("/dias/2026-08-01")
 
@@ -53,23 +60,15 @@ def test_deletedia_404(client):
 
     assert resposta.status_code == 404
 
-def test_posttarefa(client):
+def test_posttarefa(client, dicionario_tarefas):
     """Cria uma tarefa nova, deleta ela usando o ID que a propria API gerou na criação."""
-    resposta = client.post("/tarefas", json={
-        "dia_id": 1,
-        "descricao": "teste",
-        "cumprida": 1
-    })
+    resposta = client.post("/tarefas", json = dicionario_tarefas)
     assert resposta.status_code == 201
 
     client.delete(f"/tarefas/{resposta.json()['id']}")
 
-def test_deletetarefa(client):
-    resposta = client.post("/tarefas", json={
-        "dia_id" : 1,
-        "descricao": "teste",
-        "cumprida": 1
-    })
+def test_deletetarefa(client, dicionario_tarefas):
+    resposta = client.post("/tarefas", json = dicionario_tarefas)
 
     tarefa_id = resposta.json()['id']
     delete = client.delete(f"/tarefas/{tarefa_id}")
