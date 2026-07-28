@@ -83,3 +83,26 @@ def delete_tarefa (id: int):
     con.commit()
     con.close()
     return {"Status": "Tarefa Deletada"}
+
+class AtualizarTarefa(BaseModel):
+    cumprida: int
+
+@app.patch("/tarefas/{id}")
+def atualizar_tarefa(id: int, tarefa: AtualizarTarefa):
+    """Atualiza se uma tarefa foi cumprida ou nao"""
+    con = sqlite3.connect("db/rotina.db")
+    cur = con.cursor()
+
+    cur.execute(
+        "UPDATE tarefas SET cumprida = ? WHERE id = ?",
+        (tarefa.cumprida, id)
+    )
+
+    if cur.rowcount == 0:
+        con.close()
+        raise HTTPException(status_code=404, detail="Tarefa nao encontrada")
+
+    con.commit()
+    con.close()
+    return {"Status": "Tarefa Atualizada"}
+
