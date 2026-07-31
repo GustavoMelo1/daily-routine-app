@@ -1,12 +1,19 @@
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException
 import sqlite3
 from pydantic import BaseModel
 
+load_dotenv()
+
 app = FastAPI()
 
 def conexao():
-    con = sqlite3.connect("db/rotina.db")
+    con = sqlite3.connect(os.getenv("db_url"))
     return con
+
+def env():
+    os.getenv("db")
 
 class Dia(BaseModel):
     data: str
