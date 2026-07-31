@@ -1,9 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 import sqlite3
 from pydantic import BaseModel
-from fastapi import HTTPException
 
 app = FastAPI()
+
+def conexao():
+    con = sqlite3.connect("db/rotina.db")
+    return con
 
 class Dia(BaseModel):
     data: str
@@ -18,9 +21,8 @@ class Tarefa(BaseModel):
     cumprida: int
 
 @app.get("/dias/{data}")
-def dias(data: str):
+def dias(data: str, con = Depends(conexao)):
     """Busca a tabela DIAS no BANCO pela DATA"""
-    con = sqlite3.connect("db/rotina.db")
     cur = con.cursor()
     cur.execute("SELECT dias.data,dias.frase_do_dia, tarefas.descricao, tarefas.cumprida FROM dias LEFT JOIN tarefas ON dias.id = tarefas.dia_id WHERE dias.data = ? ", (data,))
     resultado = cur.fetchall()
@@ -31,9 +33,8 @@ def dias(data: str):
     return resultado
 
 @app.post("/dias", status_code=201)
-def create_dia(dia: Dia):
+def create_dia(dia: Dia, con = Depends(conexao)):
     """Cria um novo DIA no BANCO"""
-    con = sqlite3.connect("db/rotina.db")
     cur = con.cursor()
     try:
         cur.execute("INSERT INTO dias (data, minutos_estudados, frase_do_dia, autor_frase, tipo) VALUES(?, ?, ?, ?, ?)", (dia.data, dia.minutos_estudados, dia.frase_do_dia, dia.autor_frase, dia.tipo))
@@ -45,9 +46,8 @@ def create_dia(dia: Dia):
         raise HTTPException(status_code=400, detail="Dia ja existente")
 
 @app.delete("/dias/{data}")
-def delete_dia(data: str):
+def delete_dia(data: str, con = Depends(conexao)):
     """Deleta o DIA do BANCO"""
-    con = sqlite3.connect("db/rotina.db")
     cur = con.cursor()
     cur.execute("DELETE FROM dias WHERE data = ?", (data,))
     
@@ -60,9 +60,8 @@ def delete_dia(data: str):
     return {"Status": "Dia Deletado"}
 
 @app.post("/tarefas", status_code=201)
-def create_tarefas(tarefa: Tarefa):
+def create_tarefas(tarefa: Tarefa, con = Depends(conexao)):
     """Cria uma nova TAREFA no BANCO"""
-    con = sqlite3.connect("db/rotina.db")
     cur = con.cursor()
     cur.execute("INSERT INTO tarefas (dia_id, descricao, cumprida) VALUES (?, ?, ? )", (tarefa.dia_id, tarefa.descricao, tarefa.cumprida))
     con.commit()
@@ -71,9 +70,8 @@ def create_tarefas(tarefa: Tarefa):
     return {"id": new_id, "Status": "Tarefa Criada"}
 
 @app.delete("/tarefas/{id}")
-def delete_tarefa (id: int):
+def delete_tarefa (id: int, con = Depends(conexao)):
     """Deleta a TAREFA do BANCO"""
-    con = sqlite3.connect("db/rotina.db")
     cur = con.cursor()
     cur.execute("DELETE FROM tarefas WHERE id = ?", (id,))
     if cur.rowcount == 0:
@@ -88,9 +86,8 @@ class AtualizarTarefa(BaseModel):
     cumprida: int
 
 @app.patch("/tarefas/{id}")
-def atualizar_tarefa(id: int, tarefa: AtualizarTarefa):
+def atualizar_tarefa(id: int, tarefa: AtualizarTarefa, con = Depends(conexao)):
     """Atualiza se uma tarefa foi cumprida ou nao"""
-    con = sqlite3.connect("db/rotina.db")
     cur = con.cursor()
 
     cur.execute(
