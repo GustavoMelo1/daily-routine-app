@@ -12,8 +12,10 @@ def conexao():
     con = sqlite3.connect(os.getenv("db_url"))
     return con
 
-def env():
-    os.getenv("db")
+def status(con, cur, mensagem):
+    if cur.rowcount == 0:
+        con.close()
+        raise HTTPException(status_code=404, detail=mensagem)
 
 class Dia(BaseModel):
     data: str
@@ -57,10 +59,7 @@ def delete_dia(data: str, con = Depends(conexao)):
     """Deleta o DIA do BANCO"""
     cur = con.cursor()
     cur.execute("DELETE FROM dias WHERE data = ?", (data,))
-    
-    if cur.rowcount == 0:
-        con.close()
-        raise HTTPException(status_code=404,detail="Dia não encontrado")
+    status(con, cur, "Dia não encontrado")
 
     con.commit()
     con.close()
@@ -81,9 +80,7 @@ def delete_tarefa (id: int, con = Depends(conexao)):
     """Deleta a TAREFA do BANCO"""
     cur = con.cursor()
     cur.execute("DELETE FROM tarefas WHERE id = ?", (id,))
-    if cur.rowcount == 0:
-        con.close()
-        raise HTTPException(status_code=404,detail="Tarefa não encontrada")
+    status(con, cur, "Tarefa não encontrada")
 
     con.commit()
     con.close()
@@ -102,9 +99,7 @@ def atualizar_tarefa(id: int, tarefa: AtualizarTarefa, con = Depends(conexao)):
         (tarefa.cumprida, id)
     )
 
-    if cur.rowcount == 0:
-        con.close()
-        raise HTTPException(status_code=404, detail="Tarefa nao encontrada")
+    status(con, cur, "Tarefa nao encontrada")
 
     con.commit()
     con.close()
