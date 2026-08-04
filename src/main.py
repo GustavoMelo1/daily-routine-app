@@ -8,15 +8,6 @@ load_dotenv()
 
 app = FastAPI()
 
-def conexao():
-    con = sqlite3.connect(os.getenv("db_url"))
-    return con
-
-def status(con, cur, mensagem):
-    if cur.rowcount == 0:
-        con.close()
-        raise HTTPException(status_code=404, detail=mensagem)
-
 class Dia(BaseModel):
     data: str
     minutos_estudados: int
@@ -28,6 +19,18 @@ class Tarefa(BaseModel):
     dia_id: int
     descricao: str
     cumprida: int
+
+class AtualizarTarefa(BaseModel):
+    cumprida: int
+
+def conexao():
+    con = sqlite3.connect(os.getenv("db_url"))
+    return con
+
+def status(con, cur, mensagem):
+    if cur.rowcount == 0:
+        con.close()
+        raise HTTPException(status_code=404, detail=mensagem)
 
 @app.get("/dias/{data}")
 def dias(data: str, con = Depends(conexao)):
@@ -85,8 +88,6 @@ def delete_tarefa (id: int, con = Depends(conexao)):
     con.commit()
     con.close()
     return {"Status": "Tarefa Deletada"}
-
-class AtualizarTarefa(BaseModel):
     cumprida: int
 
 @app.patch("/tarefas/{id}")
