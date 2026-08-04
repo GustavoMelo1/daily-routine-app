@@ -1,12 +1,20 @@
 import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 from pydantic import BaseModel
 
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Dia(BaseModel):
     data: str
