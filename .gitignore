@@ -6,7 +6,11 @@ venv
 /.venv
 
 
-db/rotina.db
-db/database.sql
+backend/db/rotina.db
+backend/db/database.sql
 
 __pycache__/
+.pytest_cache/
+
+node_modules/
+dist/
