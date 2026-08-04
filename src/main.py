@@ -24,10 +24,12 @@ class AtualizarTarefa(BaseModel):
     cumprida: int
 
 def conexao():
+    """Conecta no db e retorna a conexão"""
     con = sqlite3.connect(os.getenv("db_url"))
     return con
 
 def status(con, cur, mensagem):
+    """Verifica o db se encontrou algo se nao lança erro 404 com a mensagem recebida"""
     if cur.rowcount == 0:
         con.close()
         raise HTTPException(status_code=404, detail=mensagem)
