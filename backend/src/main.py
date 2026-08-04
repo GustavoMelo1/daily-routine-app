@@ -42,6 +42,21 @@ def status(con, cur, mensagem):
         con.close()
         raise HTTPException(status_code=404, detail=mensagem)
 
+@app.get("/dias")
+def listar_dias_do_mes(ano: int, mes: int, con = Depends(conexao)):
+    """Lista os dias de um mes, com a primeira tarefa como marcador resumido"""
+    cur = con.cursor()
+    prefixo = f"{ano:04d}-{mes:02d}"
+    cur.execute(
+        "SELECT dias.data, "
+        "(SELECT descricao FROM tarefas WHERE tarefas.dia_id = dias.id ORDER BY tarefas.id LIMIT 1) "
+        "FROM dias WHERE dias.data LIKE ?",
+        (f"{prefixo}%",),
+    )
+    linhas = cur.fetchall()
+    con.close()
+    return [{"data": linha[0], "marcador": linha[1]} for linha in linhas]
+
 @app.get("/dias/{data}")
 def dias(data: str, con = Depends(conexao)):
     """Busca a tabela DIAS no BANCO pela DATA, com as tarefas do dia"""
@@ -117,7 +132,6 @@ def delete_tarefa (id: int, con = Depends(conexao)):
     con.commit()
     con.close()
     return {"Status": "Tarefa Deletada"}
-    cumprida: int
 
 @app.patch("/tarefas/{id}")
 def atualizar_tarefa(id: int, tarefa: AtualizarTarefa, con = Depends(conexao)):
