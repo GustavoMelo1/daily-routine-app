@@ -7,6 +7,17 @@ export function formatarDataISO(date) {
   return `${ano}-${mes}-${dia}`;
 }
 
+export async function listarDiasDoMes(ano, mes) {
+  const resposta = await fetch(`${BASE_URL}/dias?ano=${ano}&mes=${mes}`);
+  if (!resposta.ok) throw new Error("Falha ao listar os dias do mês");
+  const lista = await resposta.json();
+  const marcadores = {};
+  for (const item of lista) {
+    if (item.marcador) marcadores[item.data] = item.marcador;
+  }
+  return marcadores;
+}
+
 export async function buscarDia(dataISO) {
   const resposta = await fetch(`${BASE_URL}/dias/${dataISO}`);
   if (resposta.status === 404) return null;
