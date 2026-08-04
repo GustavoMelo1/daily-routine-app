@@ -9,6 +9,7 @@ def client():
 
 @pytest.fixture
 def dicionario_dias():
+    """Retorna um dicionario padrao com os campos de um dia, sem a data"""
     return {
         "minutos_estudados": 10,
         "frase_do_dia": "teste",
@@ -17,6 +18,7 @@ def dicionario_dias():
 
 @pytest.fixture
 def dicionario_tarefas():
+    """Retorna um dicionario padrao com os campos de uma tarefa"""
     return {
         "dia_id": 1,
         "descricao": "teste",
@@ -33,7 +35,7 @@ def test_getdia_404(client):
     assert resposta.status_code == 404
 
 def test_postdia(client, dicionario_dias):
-    """Cria um dia novo (nao existia) confere, deleta logo em seguida"""
+    """Cria um dia novo que nao existe confere, deleta logo em seguida"""
     dicionario = {**dicionario_dias, "data": "2026-08-01"}  
     resposta = client.post("/dias", json = dicionario)
     assert resposta.status_code == 201
@@ -61,13 +63,14 @@ def test_deletedia_404(client):
     assert resposta.status_code == 404
 
 def test_posttarefa(client, dicionario_tarefas):
-    """Cria uma tarefa nova, deleta ela usando o ID que a propria API gerou na criação."""
+    """Cria uma tarefa nova, deleta ela usando o ID que a propria API gerou na criação"""
     resposta = client.post("/tarefas", json = dicionario_tarefas)
     assert resposta.status_code == 201
 
     client.delete(f"/tarefas/{resposta.json()['id']}")
 
 def test_deletetarefa(client, dicionario_tarefas):
+    """Cria uma tarefa, deleta ela pelo id, e confere se deu certo"""
     resposta = client.post("/tarefas", json = dicionario_tarefas)
 
     tarefa_id = resposta.json()['id']
@@ -76,11 +79,13 @@ def test_deletetarefa(client, dicionario_tarefas):
     assert delete.status_code == 200
     
 def test_deletetarefa_404(client):
+    """Tenta deletar uma tarefa que nunca existiu e confere"""
     resposta = client.delete("/tarefas/99999999")
 
     assert resposta.status_code == 404
 
 def test_patchtarefa(client, dicionario_tarefas):
+    """Cria uma tarefa, atualiza o campo cumprida, e confere se deu certo"""
     resposta = client.post("/tarefas", json = dicionario_tarefas)
 
     tarefa_id = resposta.json()['id']
@@ -91,6 +96,7 @@ def test_patchtarefa(client, dicionario_tarefas):
     client.delete(f"/tarefas/{tarefa_id}")
 
 def test_patchtarefa_404(client):
+    """Tenta atualizar uma tarefa que nunca existiu e confere"""
     resposta = client.patch("/tarefas/99999999", json = {"cumprida": 1})
 
     assert resposta.status_code == 404
