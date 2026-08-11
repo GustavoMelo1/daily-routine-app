@@ -8,15 +8,29 @@ Personal digital agenda (calendar, tasks, goals and daily quote) with its own Fa
 daily-routine-app/
 ├── backend/
 │   ├── db/
-│   │   ├── schema.sql       # table definitions (dias, tarefas, metas_semanais, conferencias)
-│   │   └── init_db.py       # creates the database from schema.sql
+│   │   ├── schema.sql
+│   │   └── init_db.py
+│   ├── pipeline/
+│   │   ├── ocr.py
+│   │   └── publicar.py
 │   ├── src/
-│   │   └── main.py          # FastAPI API (dias and tarefas routes)
+│   │   └── main.py
 │   ├── tests/
-│   │   └── test_main.py     # automated tests (pytest)
-│   ├── .env.example         # environment variables template
-│   └── requirements.txt     # Python dependencies
-├── frontend/                # React + Vite + Tailwind app
+│   │   └── test_main.py
+│   ├── .env.example
+│   └── requirements.txt
+├── frontend/
+│   ├── public/
+│   │   ├── favicon.svg
+│   │   └── icons.svg
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
 └── README.md
 ```
 
