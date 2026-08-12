@@ -1,6 +1,10 @@
 from PIL import Image
 
+import os
+import genai
 import pytesseract
+
+os.getenv("GEMINI_API_KEY")
 
 config='--psm 6'
 lang='por'
