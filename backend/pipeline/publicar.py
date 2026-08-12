@@ -12,3 +12,7 @@ json_dias = {
 json_tarefas = [
     {"descricao": "studar Python", "cumprida": 1},
 ]
+
+response = requests.post("http://localhost:8000/dias", json=json_dias)
+
+dia_id  = response.json()['day']
