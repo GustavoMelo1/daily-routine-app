@@ -95,8 +95,9 @@ def create_dia(dia: Dia, con = Depends(conexao)):
     try:
         cur.execute("INSERT INTO dias (data, minutos_estudados, frase_do_dia, autor_frase, tipo) VALUES(?, ?, ?, ?, ?)", (dia.data, dia.minutos_estudados, dia.frase_do_dia, dia.autor_frase, dia.tipo))
         con.commit()
+        new_day = cur.lastrowid
         con.close()
-        return {"Status": "Dia novo Criado"}
+        return {"day": new_day, "Status": "Dia novo Criado"}
     except sqlite3.IntegrityError:
         con.close()
         raise HTTPException(status_code=400, detail="Dia ja existente")
