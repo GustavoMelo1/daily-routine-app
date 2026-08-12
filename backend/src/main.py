@@ -33,7 +33,7 @@ class AtualizarTarefa(BaseModel):
 
 def conexao():
     """Conecta no db e retorna a conexão"""
-    con = sqlite3.connect(os.getenv("db_url"))
+    con = sqlite3.connect(os.getenv("DB_URL"))
     return con
 
 def status(con, cur, mensagem):
