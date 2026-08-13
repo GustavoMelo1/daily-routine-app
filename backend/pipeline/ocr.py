@@ -45,7 +45,7 @@ def extract(path_image):
                 "dias": [
                     {
                     "dia_semana": "",
-                    "data": "AAAA/MM/DD",
+                    "data": "AAAA-MM-DD",
                     "minutos_estudados": 0,
                     "frase_do_dia": "",
                     "autor_frase": "",
