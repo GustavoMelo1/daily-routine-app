@@ -21,7 +21,7 @@ def extract(path_image):
                 "text": """Você é um sistema de OCR especializado em caligrafia manuscrita em português do Brasil.
 
                 TAREFA
-                Transcrever a página de caderno da imagem. É uma agenda diária: cada bloco começa com o dia da semana + data, seguido de itens com caixinhas de checkbox.
+                Transcrever a página de caderno da imagem. É uma agenda diária: cada bloco começa com o dia da semana + data (às vezes com o tempo estudado ao lado, tipo "ESTUDEI HOJE 1:20"), seguido de itens com caixinhas de checkbox, e no fim da página costuma ter uma seção "FRASE DO DIA" com uma citação e o nome de quem a disse/escreveu.
 
                 REGRAS
                 1. Transcreva EXATAMENTE o que está escrito, sem corrigir ortografia, sem completar abreviações e sem reescrever em linguagem formal.
@@ -35,6 +35,8 @@ def extract(path_image):
                 5. Não invente itens que não estão na página. Não pule itens.
                 6. Linhas em branco no fim da página devem ser ignoradas.
                 7. Termos técnicos comuns nesse caderno (use como referência ao desambiguar, mas NÃO force se não bater): estágio, projeto, front, Qlik, SQL, modelagem, GitHub, skincare, Ikigai.
+                8. "minutos_estudados": se a página tiver um tempo de estudo anotado (tipo "1:20" ou "45min"), converta pro total em minutos (1:20 vira 80). Se não houver, use 0.
+                9. "frase_do_dia" e "autor_frase": pegue especificamente da seção "FRASE DO DIA" (geralmente no fim da página), não do cabeçalho. Se não houver seção assim, use "" pros dois.
 
                 SAÍDA
                 Devolva SOMENTE um JSON válido, sem markdown, sem cercas de código, sem comentários, neste formato:
@@ -44,7 +46,9 @@ def extract(path_image):
                     {
                     "dia_semana": "",
                     "data": "DD/MM/AAAA",
-                    "titulo_lateral": "",
+                    "minutos_estudados": 0,
+                    "frase_do_dia": "",
+                    "autor_frase": "",
                     "itens": [
                         { "texto": "", "status": "feito | nao_feito | aberto | incerto" }
                     ]
@@ -53,7 +57,6 @@ def extract(path_image):
                 "trechos_incertos": []
                 }
 
-                "titulo_lateral" é qualquer texto escrito à direita do cabeçalho da data (frase do dia, lembrete etc). Se não houver, use "".
                 "trechos_incertos" lista as strings que você marcou com (?) ou [ilegível].""",
             },
             {
