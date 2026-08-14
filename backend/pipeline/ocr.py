@@ -71,4 +71,3 @@ def extract(path_image):
     return save
 
 
-print(extract("exemplo.jpeg"))
