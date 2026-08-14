@@ -14,7 +14,7 @@ for dia in result["dias"]:
 
     
     response = requests.post("http://localhost:8000/dias", json=payload_dia) 
-    get_id = response.json()['day']
+    get_id = response.json()['dia']
 
     for itens in dia["itens"]:
         if itens["status"] == "feito":
@@ -27,3 +27,8 @@ for dia in result["dias"]:
             "cumprida": cumprida
         }
         requests.post("http://localhost:8000/tarefas", json=payload_tarefas)
+
+    for dias in result["dias"]:
+        checagem = requests.get(f"http://localhost:8000/dias/{dia['data']}")
+        if checagem.status_code == 200:
+            continue
