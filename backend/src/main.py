@@ -97,7 +97,7 @@ def create_dia(dia: Dia, con = Depends(conexao)):
         con.commit()
         new_day = cur.lastrowid
         con.close()
-        return {"day": new_day, "Status": "Dia novo Criado"}
+        return {"dia": new_day, "Status": "Dia novo Criado"}
     except sqlite3.IntegrityError:
         con.close()
         raise HTTPException(status_code=400, detail="Dia ja existente")
