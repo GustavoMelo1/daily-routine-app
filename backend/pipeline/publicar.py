@@ -1,18 +1,15 @@
 import requests
+from ocr import extract
 
+result = extract("exemplo.jpeg")
 
-json_dias = {
-    "data" : "2026-08-10",
-    "minutos_estudados": 45,
-    "frase_do_dia": "Amar e deixar ir " ,
-    "autor_frase": "Gustavo Melo",
-    "tipo": "Normal"
-}
+for dia in result["dias"]:
+    payload_dia = {
+        "data": dia["data"], 
+        "minutos_estudados": dia["minutos_estudados"], 
+        "frase_do_dia": dia["frase_do_dia"], 
+        "autor_frase": dia["autor_frase"], 
+        "tipo": "normal"
+        }
+    response = requests.post("http://localhost:8000/dias", json=payload_dia)
 
-json_tarefas = [
-    {"descricao": "studar Python", "cumprida": 1},
-]
-
-response = requests.post("http://localhost:8000/dias", json=json_dias)
-
-dia_id  = response.json()['day']
