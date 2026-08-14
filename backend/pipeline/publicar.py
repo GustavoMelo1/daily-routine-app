@@ -4,6 +4,10 @@ from ocr import extract
 result = extract("exemplo.jpeg")
 
 for dia in result["dias"]:
+    checagem = requests.get(f"http://localhost:8000/dias/{dia['data']}")
+    if checagem.status_code == 200:
+        continue
+
     payload_dia = {
         "data": dia["data"], 
         "minutos_estudados": dia["minutos_estudados"], 
@@ -11,8 +15,7 @@ for dia in result["dias"]:
         "autor_frase": dia["autor_frase"], 
         "tipo": "normal"
         }
-
-    
+  
     response = requests.post("http://localhost:8000/dias", json=payload_dia) 
     get_id = response.json()['dia']
 
@@ -27,8 +30,3 @@ for dia in result["dias"]:
             "cumprida": cumprida
         }
         requests.post("http://localhost:8000/tarefas", json=payload_tarefas)
-
-    for dias in result["dias"]:
-        checagem = requests.get(f"http://localhost:8000/dias/{dia['data']}")
-        if checagem.status_code == 200:
-            continue
