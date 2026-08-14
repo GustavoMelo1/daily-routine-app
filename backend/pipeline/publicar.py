@@ -11,5 +11,19 @@ for dia in result["dias"]:
         "autor_frase": dia["autor_frase"], 
         "tipo": "normal"
         }
-    response = requests.post("http://localhost:8000/dias", json=payload_dia)
 
+    
+    response = requests.post("http://localhost:8000/dias", json=payload_dia) 
+    get_id = response.json()['day']
+
+    for itens in dia["itens"]:
+        if itens["status"] == "feito":
+            cumprida = 1
+        else:
+            cumprida = 0
+        payload_tarefas = {
+            "dia_id": get_id,
+            "descricao": itens["texto"],
+            "cumprida": cumprida
+        }
+        requests.post("http://localhost:8000/tarefas", json=payload_tarefas)
