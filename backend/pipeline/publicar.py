@@ -1,5 +1,7 @@
+import difflib
 import requests
 from ocr import extract
+from vocabulary import repetitive_tasks
 
 result = extract("exemplo.jpeg")
 
@@ -26,9 +28,15 @@ for dia in result["dias"]:
             cumprida = 1
         else:
             cumprida = 0
+        conference = difflib.get_close_matches(itens["texto"], repetitive_tasks)
+        if conference:
+            descricao = conference[0]
+        else:
+            descricao = itens["texto"]
+            
         payload_tarefas = {
             "dia_id": get_id,
-            "descricao": itens["texto"],
+            "descricao": descricao,
             "cumprida": cumprida
         }
         requests.post("http://localhost:8000/tarefas", json=payload_tarefas)
