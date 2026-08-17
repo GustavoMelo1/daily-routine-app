@@ -24,10 +24,15 @@ def dicionario_tarefas():
         "descricao": "teste",
         "cumprida": 1}
 
-def test_getdia(client):
-    """Busca um dia que ja existe no banco e confere"""
-    resposta = client.get("/dias/2026-07-02")
+def test_getdia(client, dicionario_dias):
+    """Cria um dia, busca ele pela data e confere, depois deleta"""
+    dicionario = {**dicionario_dias, "data": "2026-08-03"}
+    client.post("/dias", json=dicionario)
+
+    resposta = client.get("/dias/2026-08-03")
     assert resposta.status_code == 200
+
+    client.delete("/dias/2026-08-03")
 
 def test_getdia_404(client):
     """Busca um dia que nunca existiu e confere"""
