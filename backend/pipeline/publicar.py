@@ -4,12 +4,14 @@ from ocr import extract
 result = extract("exemplo.jpeg")
 
 for dia in result["dias"]:
-    checagem = requests.get(f"http://localhost:8000/dias/{dia['data']}")
+    transform = dia["data"]
+    formatted = transform.replace("/", "-")
+    checagem = requests.get(f"http://localhost:8000/dias/{formatted}")
     if checagem.status_code == 200:
         continue
 
     payload_dia = {
-        "data": dia["data"], 
+        "data": formatted, 
         "minutos_estudados": dia["minutos_estudados"], 
         "frase_do_dia": dia["frase_do_dia"], 
         "autor_frase": dia["autor_frase"], 
