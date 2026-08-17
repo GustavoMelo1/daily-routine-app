@@ -38,19 +38,18 @@ daily-routine-app/
 ## Stack
 
 **Backend**
-- **Python** + **FastAPI**
-- **SQLite** (database)
-- **pytest** (automated tests)
-- **python-dotenv** (configuration via environment variable)
+- Python + FastAPI
+- SQLite
+- pytest
+- python-dotenv
 
 **Pipeline**
-- **Google Gemini API** (`google-genai`) — vision model reading a photo of the notebook and extracting structured data
-- **difflib** (stdlib) — fuzzy-matches recurring task names against a known vocabulary
+- Google Gemini API (`google-genai`)
+- difflib (stdlib)
 
 **Frontend**
-- **React** + **Vite**
-- **Tailwind CSS**
-- Currently a **static, non-functional mock** (`frontend/src/App.jsx`) — the real frontend is being built separately.
+- React + Vite + Tailwind
+- Static mock for now (`frontend/src/App.jsx`) — real frontend in progress separately.
 
 ## How to run
 
@@ -85,26 +84,15 @@ Fill in `GEMINI_API_KEY` in `.env` (get one at [aistudio.google.com](https://ais
    npm run dev
    ```
 
-## Pipeline
+### Pipeline
 
-The pipeline replaces manual data entry: take a photo of the physical notebook page, and it loads the day and its tasks straight into the database through the existing API — no typing.
-
-```
-pipeline/
-├── ocr.py         # sends the photo to Gemini, gets back structured JSON
-├── vocabulary.py  # known recurring task names, used for fuzzy-matching
-└── publicar.py    # loads the JSON into the API (POST /dias, POST /tarefas)
-```
-
-Run it with:
 ```
 cd backend/pipeline
 python publicar.py
 ```
 
-It's idempotent — running the same photo twice does not duplicate the day or its tasks.
+Idempotent — running the same photo twice doesn't duplicate the day or its tasks.
 
-### Why Gemini instead of classic OCR
+**Why Gemini, not Tesseract**: tried Tesseract first, it couldn't read the handwriting and can't tell a filled vs. crossed-out checkbox apart. Gemini vision does both.
 
-The first attempt used Tesseract (`pytesseract`), a traditional OCR engine. It failed outright on the notebook's handwriting, and — more fundamentally — a checkbox that's filled in, crossed out, or left empty isn't something character-recognition OCR can interpret; it needs actual visual understanding of the mark, not just character shapes. Switching to the Gemini vision API solved both problems: it reads the handwriting reliably and can tell filled/crossed/empty checkboxes apart based on a prompt describing the three states.
 
