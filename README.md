@@ -91,8 +91,5 @@ cd backend/pipeline
 python publicar.py
 ```
 
-Idempotent — running the same photo twice doesn't duplicate the day or its tasks.
-
-**Why Gemini, not Tesseract**: tried Tesseract first, it couldn't read the handwriting and can't tell a filled vs. crossed-out checkbox apart. Gemini vision does both.
 
 
