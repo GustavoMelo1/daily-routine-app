@@ -11,7 +11,8 @@ id INTEGER PRIMARY KEY,
 dia_id INTEGER,
 descricao TEXT, 
 cumprida INTEGER,
-FOREIGN KEY (dia_id) REFERENCES dias(id));
+FOREIGN KEY (dia_id) REFERENCES dias(id)
+);
 
 CREATE TABLE conferencias(
 id INTEGER PRIMARY KEY,
@@ -38,5 +39,15 @@ autor_frase TEXT,
 tipo TEXT,
 status TEXT DEFAULT 'pendente',
 motivo_erro TEXT
+);
+
+CREATE TABLE tarefas_quarentena(
+id INTEGER PRIMARY KEY,
+erro_quarentena_id INTEGER,
+descricao TEXT, 
+cumprida INTEGER,
+status TEXT DEFAULT 'pendente',
+motivo_erro TEXT,
+FOREIGN KEY (erro_quarentena_id) REFERENCES erros_quarentena(id)
 );
 
