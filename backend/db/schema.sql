@@ -28,3 +28,15 @@ semana_inicio TEXT,
 semana_fim TEXT,
 descricao TEXT,
 cumprida INTEGER);
+
+CREATE TABLE erros_quarentena(
+id INTEGER PRIMARY KEY,
+data TEXT UNIQUE, 
+minutos_estudados INTEGER,
+frase_do_dia TEXT,
+autor_frase TEXT,
+tipo TEXT,
+status TEXT DEFAULT 'pendente',
+motivo_erro TEXT
+);
+
