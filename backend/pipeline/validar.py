@@ -30,4 +30,9 @@ def validar(dia):
             if not isinstance(search_value, str) or not search_value.strip():
                 erros.append("tarefa_sem_descricao")
 
+            search_status = itens.get("status")
+            status_validos = ["feito", "nao_feito", "aberto"]
+            if search_status not in status_validos:
+                erros.append("status_tarefa_invalido")
+
     return erros
