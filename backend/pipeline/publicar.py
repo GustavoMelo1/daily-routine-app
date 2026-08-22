@@ -9,6 +9,8 @@ result = extract("exemplo.jpeg")
 for dia in result["dias"]:
     transform = dia["data"]
     formatted = transform.replace("/", "-")
+    dia["data"] = formatted
+    erros = validar(dia)
     checagem = requests.get(f"http://localhost:8000/dias/{formatted}")
     if checagem.status_code == 200:
         continue
