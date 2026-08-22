@@ -141,6 +141,16 @@ def delete_dia(data: str, con = Depends(conexao)):
     con.close()
     return {"Status": "Dia Deletado"}
 
+@app.post("/tarefas-quarentena", status_code=201)
+def create_tarefa_quarentena(tarefa: TarefaQuarentena, con = Depends(conexao)):
+    """Cria a TAREFA em QUARENTENA no Banco"""
+    cur = con.cursor()
+    cur.execute("INSERT INTO tarefas_quarentena (erro_quarentena_id, descricao, cumprida, motivo_erro) VALUES (?, ?, ?, ?)", (tarefa.erro_quarentena_id, tarefa.descricao, tarefa.cumprida, tarefa.motivo_erro))
+    con.commit()
+    tarefa_id = cur.lastrowid
+    con.close()
+    return {"id": tarefa_id, "Status": "Tarefa em Quarentena"}
+
 @app.post("/tarefas", status_code=201)
 def create_tarefas(tarefa: Tarefa, con = Depends(conexao)):
     """Cria uma nova TAREFA no BANCO"""
