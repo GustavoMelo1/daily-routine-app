@@ -110,6 +110,20 @@ def create_dia(dia: Dia, con = Depends(conexao)):
         con.close()
         raise HTTPException(status_code=400, detail="Dia ja existente")
 
+@app.post("/erros-quarentena", status_code=201)
+def create_erros(dia: ErroQuarentena, con = Depends(conexao)):
+    """Envia um dia para o quarentena pro BANCO"""
+    cur = con.cursor()
+    try:
+        cur.execute("INSERT INTO erros_quarentena (data, minutos_estudados,frase_do_dia , autor_frase, tipo, motivo_erro) VALUES(?, ?, ?, ?, ?, ?)", (dia.data, dia.minutos_estudados, dia.frase_do_dia, dia.autor_frase, dia.tipo, dia.motivo_erro))
+        con.commit()
+        erro_id = cur.lastrowid
+        con.close()
+        return {"id": erro_id, "Status": "Dia enviado para quarentena"}
+    except sqlite3.IntegrityError:
+        con.close()
+        raise HTTPException(status_code=400, detail="Dia já está na quarentena")
+
 @app.delete("/dias/{data}")
 def delete_dia(data: str, con = Depends(conexao)):
     """Deleta o DIA do BANCO"""
