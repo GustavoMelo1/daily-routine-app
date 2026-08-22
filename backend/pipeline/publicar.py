@@ -11,6 +11,8 @@ for dia in result["dias"]:
     formatted = transform.replace("/", "-")
     dia["data"] = formatted
     erros = validar(dia)
+    if erros:
+        motivo_erro = ", ".join(erros)
     checagem = requests.get(f"http://localhost:8000/dias/{formatted}")
     if checagem.status_code == 200:
         continue
