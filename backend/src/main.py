@@ -16,6 +16,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class TarefaQuarentena(BaseModel):
+    erro_quarentena_id: int
+    descricao: str | None = None
+    cumprida: int | None = None
+    motivo_erro: str | None = None
+
 class ErroQuarentena(BaseModel):
     data: str | None = None
     minutos_estudados: int | None = None
