@@ -2,6 +2,7 @@ import difflib
 import requests
 from ocr import extract
 from vocabulary import repetitive_tasks
+from validar import validar
 
 result = extract("exemplo.jpeg")
 
