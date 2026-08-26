@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from src.main import app
+from src.main import app, conexao
 import pytest
 
 
@@ -105,3 +105,55 @@ def test_patchtarefa_404(client):
     resposta = client.patch("/tarefas/99999999", json = {"cumprida": 1})
 
     assert resposta.status_code == 404
+
+def test_post_dia_e_tarefa_na_quarentena(client):
+    con = conexao()
+    con.execute(
+        "DELETE FROM erros_quarentena WHERE data = ?",
+        ("2099-08-25",)
+    )
+    con.commit()
+    con.close()
+
+    payload_dia = {
+        "data": "2099-08-25",
+        "minutos_estudados": 1500,
+        "frase_do_dia": "teste",
+        "autor_frase": "teste",
+        "tipo": "normal",
+        "motivo_erro": "minutos_invalidos"
+    }
+
+    resposta_dia = client.post("/erros-quarentena", json=payload_dia)
+
+    assert resposta_dia.status_code == 201
+    assert "id" in resposta_dia.json()
+
+    erro_id = resposta_dia.json()["id"]
+
+    payload_tarefa = {
+        "erro_quarentena_id": erro_id,
+        "descricao": "Estudar SQL",
+        "cumprida": 1,
+        "motivo_erro": None
+    }
+
+    resposta_tarefa = client.post(
+        "/tarefas-quarentena",
+        json=payload_tarefa
+    )
+
+    assert resposta_tarefa.status_code == 201
+    assert "id" in resposta_tarefa.json()
+
+    con = conexao()
+    con.execute(
+        "DELETE FROM tarefas_quarentena WHERE id = ?",
+        (resposta_tarefa.json()["id"],)
+    )
+    con.execute(
+        "DELETE FROM erros_quarentena WHERE id = ?",
+        (erro_id,)
+    )
+    con.commit()
+    con.close()
