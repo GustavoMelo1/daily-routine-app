@@ -107,6 +107,7 @@ def test_patchtarefa_404(client):
     assert resposta.status_code == 404
 
 def test_post_dia_e_tarefa_na_quarentena(client):
+    """Cria um dia e uma tarefa na quarentena, confere e remove os registros"""
     con = conexao()
     con.execute(
         "DELETE FROM erros_quarentena WHERE data = ?",

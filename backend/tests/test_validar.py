@@ -2,6 +2,7 @@ from pipeline.validar import validar
 
 
 def test_dia_valido_nao_retorna_erros():
+    """Valida um dia correto e confere que nenhum erro foi encontrado"""
     dia = {
         "data": "2026-08-25",
         "minutos_estudados": 60,
@@ -15,6 +16,7 @@ def test_dia_valido_nao_retorna_erros():
     assert resultado == []
 
 def test_dia_invalido_retorna_erros():
+    """Valida um dia incorreto e confere os erros encontrados"""
     dia = {
         "data": "2026-99-99",
         "minutos_estudados": 1500,
