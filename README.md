@@ -87,8 +87,8 @@ Fill in `GEMINI_API_KEY` in `.env` (get one at [aistudio.google.com](https://ais
 ### Pipeline
 
 ```
-cd backend/pipeline
-python publicar.py
+cd backend
+python -m pipeline.publicar
 ```
 
 
