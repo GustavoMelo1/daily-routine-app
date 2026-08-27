@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from src.main import app, conexao
+from app.main import app, conexao
 
 @pytest.fixture
 def client(tmp_path):

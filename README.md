@@ -66,7 +66,7 @@ Clone the repository:
    pip install -r requirements.txt
    cp .env.example .env
    python db/init_db.py
-   uvicorn src.main:app --reload
+   uvicorn app.main:app --reload
    ```
 
 Run the tests:
