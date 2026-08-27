@@ -1,11 +1,4 @@
-from fastapi.testclient import TestClient
-from src.main import app, conexao
 import pytest
-
-
-@pytest.fixture
-def client():
-    return TestClient(app)
 
 @pytest.fixture
 def dicionario_dias():
@@ -17,10 +10,18 @@ def dicionario_dias():
         "tipo": "normal"}
 
 @pytest.fixture
-def dicionario_tarefas():
+def dia_id(client, dicionario_dias):
+    """Cria um dia no banco temporario e retorna seu id"""
+    payload = {**dicionario_dias, "data": "2026-08-02"}
+    resposta = client.post("/dias", json=payload)
+    assert resposta.status_code == 201
+    return resposta.json()["dia"]
+
+@pytest.fixture
+def dicionario_tarefas(dia_id):
     """Retorna um dicionario padrao com os campos de uma tarefa"""
     return {
-        "dia_id": 1,
+        "dia_id": dia_id,
         "descricao": "teste",
         "cumprida": 1}
 
@@ -50,7 +51,11 @@ def test_postdia(client, dicionario_dias):
 def test_postdia_dup(client, dicionario_dias):
     """Tenta criar um dia duplicado e confere se a API recusa"""
     dicionario = {**dicionario_dias, "data": "2026-07-02"}
+
+    primeira_resposta = client.post("/dias", json = dicionario)
     resposta = client.post("/dias", json = dicionario)
+
+    assert primeira_resposta.status_code == 201
     assert resposta.status_code == 400
 
 def test_deletedia(client, dicionario_dias):
@@ -108,13 +113,6 @@ def test_patchtarefa_404(client):
 
 def test_post_dia_e_tarefa_na_quarentena(client):
     """Cria um dia e uma tarefa na quarentena, confere e remove os registros"""
-    con = conexao()
-    con.execute(
-        "DELETE FROM erros_quarentena WHERE data = ?",
-        ("2099-08-25",)
-    )
-    con.commit()
-    con.close()
 
     payload_dia = {
         "data": "2099-08-25",
@@ -146,15 +144,3 @@ def test_post_dia_e_tarefa_na_quarentena(client):
 
     assert resposta_tarefa.status_code == 201
     assert "id" in resposta_tarefa.json()
-
-    con = conexao()
-    con.execute(
-        "DELETE FROM tarefas_quarentena WHERE id = ?",
-        (resposta_tarefa.json()["id"],)
-    )
-    con.execute(
-        "DELETE FROM erros_quarentena WHERE id = ?",
-        (erro_id,)
-    )
-    con.commit()
-    con.close()
