@@ -4,7 +4,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app, conexao
+from app.database.connection import get_database_connection
+from app.main import app
 
 @pytest.fixture
 def client(tmp_path):
@@ -23,10 +24,10 @@ def client(tmp_path):
         con.execute("PRAGMA foreign_keys = ON")
         return con
 
-    app.dependency_overrides[conexao] = conexao_teste
+    app.dependency_overrides[get_database_connection] = conexao_teste
 
     try:
         with TestClient(app) as cliente:
             yield cliente
     finally:
-        app.dependency_overrides.pop(conexao, None)
+        app.dependency_overrides.pop(get_database_connection, None)

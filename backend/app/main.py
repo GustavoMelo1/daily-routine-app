@@ -1,11 +1,8 @@
-import os
-from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 from pydantic import BaseModel
-
-load_dotenv()
+from app.database.connection import get_database_connection
 
 app = FastAPI()
 
@@ -45,11 +42,6 @@ class Tarefa(BaseModel):
 class AtualizarTarefa(BaseModel):
     cumprida: int
 
-def conexao():
-    """Conecta no db e retorna a conexão"""
-    con = sqlite3.connect(os.getenv("DB_URL"))
-    return con
-
 def status(con, cur, mensagem):
     """Verifica o db se encontrou algo se nao lança erro 404 com a mensagem recebida"""
     if cur.rowcount == 0:
@@ -57,7 +49,7 @@ def status(con, cur, mensagem):
         raise HTTPException(status_code=404, detail=mensagem)
 
 @app.get("/dias")
-def listar_dias_do_mes(ano: int, mes: int, con = Depends(conexao)):
+def listar_dias_do_mes(ano: int, mes: int, con = Depends(get_database_connection)):
     """Lista os dias de um mes, com a primeira tarefa como marcador resumido"""
     cur = con.cursor()
     prefixo = f"{ano:04d}-{mes:02d}"
@@ -72,7 +64,7 @@ def listar_dias_do_mes(ano: int, mes: int, con = Depends(conexao)):
     return [{"data": linha[0], "marcador": linha[1]} for linha in linhas]
 
 @app.get("/dias/{data}")
-def dias(data: str, con = Depends(conexao)):
+def dias(data: str, con = Depends(get_database_connection)):
     """Busca a tabela DIAS no BANCO pela DATA, com as tarefas do dia"""
     cur = con.cursor()
     cur.execute(
@@ -103,7 +95,7 @@ def dias(data: str, con = Depends(conexao)):
     return resultado
 
 @app.post("/dias", status_code=201)
-def create_dia(dia: Dia, con = Depends(conexao)):
+def create_dia(dia: Dia, con = Depends(get_database_connection)):
     """Cria um novo DIA no BANCO"""
     cur = con.cursor()
     try:
@@ -117,7 +109,7 @@ def create_dia(dia: Dia, con = Depends(conexao)):
         raise HTTPException(status_code=400, detail="Dia ja existente")
 
 @app.post("/erros-quarentena", status_code=201)
-def create_erros(dia: ErroQuarentena, con = Depends(conexao)):
+def create_erros(dia: ErroQuarentena, con = Depends(get_database_connection)):
     """Envia um dia para o quarentena pro BANCO"""
     cur = con.cursor()
     try:
@@ -131,7 +123,7 @@ def create_erros(dia: ErroQuarentena, con = Depends(conexao)):
         raise HTTPException(status_code=400, detail="Dia já está na quarentena")
 
 @app.delete("/dias/{data}")
-def delete_dia(data: str, con = Depends(conexao)):
+def delete_dia(data: str, con = Depends(get_database_connection)):
     """Deleta o DIA do BANCO"""
     cur = con.cursor()
     cur.execute("DELETE FROM dias WHERE data = ?", (data,))
@@ -142,7 +134,7 @@ def delete_dia(data: str, con = Depends(conexao)):
     return {"Status": "Dia Deletado"}
 
 @app.post("/tarefas-quarentena", status_code=201)
-def create_tarefa_quarentena(tarefa: TarefaQuarentena, con = Depends(conexao)):
+def create_tarefa_quarentena(tarefa: TarefaQuarentena, con = Depends(get_database_connection)):
     """Cria a TAREFA em QUARENTENA no Banco"""
     cur = con.cursor()
     cur.execute("INSERT INTO tarefas_quarentena (erro_quarentena_id, descricao, cumprida, motivo_erro) VALUES (?, ?, ?, ?)", (tarefa.erro_quarentena_id, tarefa.descricao, tarefa.cumprida, tarefa.motivo_erro))
@@ -152,7 +144,7 @@ def create_tarefa_quarentena(tarefa: TarefaQuarentena, con = Depends(conexao)):
     return {"id": tarefa_id, "Status": "Tarefa em Quarentena"}
 
 @app.post("/tarefas", status_code=201)
-def create_tarefas(tarefa: Tarefa, con = Depends(conexao)):
+def create_tarefas(tarefa: Tarefa, con = Depends(get_database_connection)):
     """Cria uma nova TAREFA no BANCO"""
     cur = con.cursor()
     cur.execute("INSERT INTO tarefas (dia_id, descricao, cumprida) VALUES (?, ?, ? )", (tarefa.dia_id, tarefa.descricao, tarefa.cumprida))
@@ -162,7 +154,7 @@ def create_tarefas(tarefa: Tarefa, con = Depends(conexao)):
     return {"id": new_id, "Status": "Tarefa Criada"}
 
 @app.delete("/tarefas/{id}")
-def delete_tarefa (id: int, con = Depends(conexao)):
+def delete_tarefa (id: int, con = Depends(get_database_connection)):
     """Deleta a TAREFA do BANCO"""
     cur = con.cursor()
     cur.execute("DELETE FROM tarefas WHERE id = ?", (id,))
@@ -173,7 +165,7 @@ def delete_tarefa (id: int, con = Depends(conexao)):
     return {"Status": "Tarefa Deletada"}
 
 @app.patch("/tarefas/{id}")
-def atualizar_tarefa(id: int, tarefa: AtualizarTarefa, con = Depends(conexao)):
+def atualizar_tarefa(id: int, tarefa: AtualizarTarefa, con = Depends(get_database_connection)):
     """Atualiza se uma tarefa foi cumprida ou nao"""
     cur = con.cursor()
 
