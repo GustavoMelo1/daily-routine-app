@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 from pydantic import BaseModel
 from app.database.connection import get_database_connection
+from app.schemas.day import DayCreate
 
 app = FastAPI()
 
@@ -26,13 +27,6 @@ class ErroQuarentena(BaseModel):
     autor_frase: str | None = None
     tipo: str | None = None
     motivo_erro: str 
-
-class Dia(BaseModel):
-    data: str
-    minutos_estudados: int
-    frase_do_dia: str
-    autor_frase: str
-    tipo: str
 
 class Tarefa(BaseModel):
     dia_id: int
@@ -95,7 +89,7 @@ def dias(data: str, con = Depends(get_database_connection)):
     return resultado
 
 @app.post("/dias", status_code=201)
-def create_dia(dia: Dia, con = Depends(get_database_connection)):
+def create_dia(dia: DayCreate, con = Depends(get_database_connection)):
     """Cria um novo DIA no BANCO"""
     cur = con.cursor()
     try:
