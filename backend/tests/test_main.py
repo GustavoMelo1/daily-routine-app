@@ -35,6 +35,17 @@ def test_getdia(client, dicionario_dias):
 
     client.delete("/dias/2026-08-03")
 
+def test_list_days_by_month(client, dicionario_dias):
+    payload = {**dicionario_dias, "data": "2026-08-04"}
+    resposta_criacao = client.post("/dias", json=payload)
+    assert resposta_criacao.status_code == 201
+    resposta = client.get("/dias", params={"ano": 2026, "mes": 8})
+    assert resposta.status_code == 200
+    assert any(
+        item["data"] == "2026-08-04"
+        for item in resposta.json()
+    )
+
 def test_getdia_404(client):
     """Busca um dia que nunca existiu e confere"""
     resposta = client.get("/dias/2099-01-01")
