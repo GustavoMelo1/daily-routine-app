@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import sqlite3
-from pydantic import BaseModel
 from app.database.connection import get_database_connection
 from app.schemas.day import DayCreate
+from app.schemas.task import TaskCreate, TaskUpdate
+from app.schemas.quarantine import QuarantineDayCreate, QuarantineTaskCreate
+import sqlite3
 
 app = FastAPI()
 
@@ -14,27 +15,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class TarefaQuarentena(BaseModel):
-    erro_quarentena_id: int
-    descricao: str | None = None
-    cumprida: int | None = None
-    motivo_erro: str | None = None
-
-class ErroQuarentena(BaseModel):
-    data: str | None = None
-    minutos_estudados: int | None = None
-    frase_do_dia: str | None = None
-    autor_frase: str | None = None
-    tipo: str | None = None
-    motivo_erro: str 
-
-class Tarefa(BaseModel):
-    dia_id: int
-    descricao: str
-    cumprida: int
-
-class AtualizarTarefa(BaseModel):
-    cumprida: int
 
 def status(con, cur, mensagem):
     """Verifica o db se encontrou algo se nao lança erro 404 com a mensagem recebida"""
@@ -103,7 +83,7 @@ def create_dia(dia: DayCreate, con = Depends(get_database_connection)):
         raise HTTPException(status_code=400, detail="Dia ja existente")
 
 @app.post("/erros-quarentena", status_code=201)
-def create_erros(dia: ErroQuarentena, con = Depends(get_database_connection)):
+def create_erros(dia: QuarantineDayCreate, con = Depends(get_database_connection)):
     """Envia um dia para o quarentena pro BANCO"""
     cur = con.cursor()
     try:
@@ -128,7 +108,7 @@ def delete_dia(data: str, con = Depends(get_database_connection)):
     return {"Status": "Dia Deletado"}
 
 @app.post("/tarefas-quarentena", status_code=201)
-def create_tarefa_quarentena(tarefa: TarefaQuarentena, con = Depends(get_database_connection)):
+def create_tarefa_quarentena(tarefa: QuarantineTaskCreate, con = Depends(get_database_connection)):
     """Cria a TAREFA em QUARENTENA no Banco"""
     cur = con.cursor()
     cur.execute("INSERT INTO tarefas_quarentena (erro_quarentena_id, descricao, cumprida, motivo_erro) VALUES (?, ?, ?, ?)", (tarefa.erro_quarentena_id, tarefa.descricao, tarefa.cumprida, tarefa.motivo_erro))
@@ -138,7 +118,7 @@ def create_tarefa_quarentena(tarefa: TarefaQuarentena, con = Depends(get_databas
     return {"id": tarefa_id, "Status": "Tarefa em Quarentena"}
 
 @app.post("/tarefas", status_code=201)
-def create_tarefas(tarefa: Tarefa, con = Depends(get_database_connection)):
+def create_tarefas(tarefa: TaskCreate, con = Depends(get_database_connection)):
     """Cria uma nova TAREFA no BANCO"""
     cur = con.cursor()
     cur.execute("INSERT INTO tarefas (dia_id, descricao, cumprida) VALUES (?, ?, ? )", (tarefa.dia_id, tarefa.descricao, tarefa.cumprida))
@@ -159,7 +139,7 @@ def delete_tarefa (id: int, con = Depends(get_database_connection)):
     return {"Status": "Tarefa Deletada"}
 
 @app.patch("/tarefas/{id}")
-def atualizar_tarefa(id: int, tarefa: AtualizarTarefa, con = Depends(get_database_connection)):
+def atualizar_tarefa(id: int, tarefa: TaskUpdate, con = Depends(get_database_connection)):
     """Atualiza se uma tarefa foi cumprida ou nao"""
     cur = con.cursor()
 
