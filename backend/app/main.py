@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.connection import get_database_connection
-from app.schemas.task import TaskCreate, TaskUpdate
 from app.schemas.quarantine import QuarantineDayCreate, QuarantineTaskCreate
 from app.api.routers.days import router as days_router
+from app.api.routers.tasks import router as tasks_router
 
 import sqlite3
 
@@ -17,13 +17,7 @@ app.add_middleware(
 )
 
 app.include_router(days_router)
-
-
-def status(con, cur, mensagem):
-    """Verifica o db se encontrou algo se nao lança erro 404 com a mensagem recebida"""
-    if cur.rowcount == 0:
-        con.close()
-        raise HTTPException(status_code=404, detail=mensagem)
+app.include_router(tasks_router)
 
 @app.post("/erros-quarentena", status_code=201)
 def create_erros(dia: QuarantineDayCreate, con = Depends(get_database_connection)):
@@ -48,40 +42,3 @@ def create_tarefa_quarentena(tarefa: QuarantineTaskCreate, con = Depends(get_dat
     tarefa_id = cur.lastrowid
     con.close()
     return {"id": tarefa_id, "Status": "Tarefa em Quarentena"}
-
-@app.post("/tarefas", status_code=201)
-def create_tarefas(tarefa: TaskCreate, con = Depends(get_database_connection)):
-    """Cria uma nova TAREFA no BANCO"""
-    cur = con.cursor()
-    cur.execute("INSERT INTO tarefas (dia_id, descricao, cumprida) VALUES (?, ?, ? )", (tarefa.dia_id, tarefa.descricao, tarefa.cumprida))
-    con.commit()
-    new_id = cur.lastrowid
-    con.close()
-    return {"id": new_id, "Status": "Tarefa Criada"}
-
-@app.delete("/tarefas/{id}")
-def delete_tarefa (id: int, con = Depends(get_database_connection)):
-    """Deleta a TAREFA do BANCO"""
-    cur = con.cursor()
-    cur.execute("DELETE FROM tarefas WHERE id = ?", (id,))
-    status(con, cur, "Tarefa não encontrada")
-
-    con.commit()
-    con.close()
-    return {"Status": "Tarefa Deletada"}
-
-@app.patch("/tarefas/{id}")
-def atualizar_tarefa(id: int, tarefa: TaskUpdate, con = Depends(get_database_connection)):
-    """Atualiza se uma tarefa foi cumprida ou nao"""
-    cur = con.cursor()
-
-    cur.execute(
-        "UPDATE tarefas SET cumprida = ? WHERE id = ?",
-        (tarefa.cumprida, id)
-    )
-
-    status(con, cur, "Tarefa nao encontrada")
-
-    con.commit()
-    con.close()
-    return {"Status": "Tarefa Atualizada"}
