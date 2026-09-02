@@ -9,7 +9,7 @@ from app.schemas.day import DayCreate
 router = APIRouter(prefix="/dias", tags=["days"])
 
 @router.get("")
-def list_days_by_month(ano: int, mes: int, con = Depends(get_database_connection)):
+def list_days_by_month(ano: int, mes: int, con= Depends(get_database_connection)):
     """Lista os dias de um mes, com a primeira tarefa como marcador resumido"""
     cur = con.cursor()
     prefixo = f"{ano:04d}-{mes:02d}"
@@ -25,7 +25,7 @@ def list_days_by_month(ano: int, mes: int, con = Depends(get_database_connection
 
 
 @router.get("/{data}")
-def get_day_by_date(data: str, con = Depends(get_database_connection)):
+def get_day_by_date(data: str, con= Depends(get_database_connection)):
     """Busca a tabela DIAS no BANCO pela DATA, com as tarefas do dia"""
     cur = con.cursor()
     cur.execute(
@@ -56,7 +56,7 @@ def get_day_by_date(data: str, con = Depends(get_database_connection)):
     return resultado
 
 @router.post("", status_code=201)
-def create_day(dia: DayCreate, con = Depends(get_database_connection)):
+def create_day(dia: DayCreate, con= Depends(get_database_connection)):
     """Cria um novo DIA no BANCO"""
     cur = con.cursor()
     try:
@@ -71,9 +71,14 @@ def create_day(dia: DayCreate, con = Depends(get_database_connection)):
 
 @router.delete("/{data}")
 def delete_day(data: str, con = Depends(get_database_connection)):
-    """Deleta o DIA do BANCO"""
+    """Deleta o DIA do BANCO."""
     cur = con.cursor()
     cur.execute("DELETE FROM dias WHERE data = ?", (data,))
+
     if cur.rowcount == 0:
         con.close()
         raise HTTPException(status_code=404, detail="Dia não encontrado")
+
+    con.commit()
+    con.close()
+    return {"Status": "Dia Deletado"}
