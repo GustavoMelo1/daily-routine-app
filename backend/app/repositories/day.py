@@ -1,7 +1,8 @@
 import sqlite3
 
 
-def find_days_by_month(connection: sqlite3.Connection,
+def find_days_by_month(
+    connection: sqlite3.Connection,
     year: int,
     month: int,
 ):
@@ -15,7 +16,8 @@ def find_days_by_month(connection: sqlite3.Connection,
     )
     return cursor.fetchall()
 
-def find_day_by_date(connection: sqlite3.Connection,
+def find_day_by_date(
+    connection: sqlite3.Connection,
     date: str,
 ):
     cursor = connection.cursor()
@@ -26,3 +28,31 @@ def find_day_by_date(connection: sqlite3.Connection,
         (date,),
     )
     return cursor.fetchall()
+
+def insert_day(
+    connection: sqlite3.Connection,
+    date: str,
+    studied_minutes: int,
+    daily_quote: str,
+    quote_author: str,
+    day_type: str,
+):
+    cursor = connection.cursor()
+    cursor.execute(
+        "INSERT INTO dias "
+        "(data, minutos_estudados, frase_do_dia, autor_frase, tipo) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (date, studied_minutes, daily_quote, quote_author, day_type),
+    )
+    return cursor.lastrowid
+
+def delete_day_by_date(
+    connection: sqlite3.Connection,
+    date: str,
+):
+    cursor = connection.cursor()
+    cursor.execute(
+        "DELETE FROM dias WHERE data = ?",
+        (date,),
+    )
+    return cursor.rowcount

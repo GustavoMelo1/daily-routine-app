@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.database.connection import get_database_connection
 from app.schemas.day import DayCreate
-from app.repositories.day import find_day_by_date, find_days_by_month
+from app.repositories.day import delete_day_by_date, find_day_by_date, find_days_by_month, insert_day
 
 router = APIRouter(prefix="/dias", tags=["days"])
 
@@ -50,13 +50,11 @@ def get_day_by_date(data: str, con= Depends(get_database_connection)):
 @router.post("", status_code=201)
 def create_day(dia: DayCreate, con= Depends(get_database_connection)):
     """Cria um novo DIA no BANCO"""
-    cur = con.cursor()
     try:
-        cur.execute("INSERT INTO dias (data, minutos_estudados, frase_do_dia, autor_frase, tipo) VALUES(?, ?, ?, ?, ?)", (dia.data, dia.minutos_estudados, dia.frase_do_dia, dia.autor_frase, dia.tipo))
+        new_day_id = insert_day(connection=con, date=dia.data, studied_minutes=dia.minutos_estudados, daily_quote=dia.frase_do_dia, quote_author=dia.autor_frase, day_type=dia.tipo,)
         con.commit()
-        new_day = cur.lastrowid
         con.close()
-        return {"dia": new_day, "Status": "Dia novo Criado"}
+        return {"dia": new_day_id, "Status": "Dia novo Criado"}
     except sqlite3.IntegrityError:
         con.close()
         raise HTTPException(status_code=400, detail="Dia ja existente")
@@ -64,10 +62,9 @@ def create_day(dia: DayCreate, con= Depends(get_database_connection)):
 @router.delete("/{data}")
 def delete_day(data: str, con = Depends(get_database_connection)):
     """Deleta o DIA do BANCO."""
-    cur = con.cursor()
-    cur.execute("DELETE FROM dias WHERE data = ?", (data,))
+    affected_rows = delete_day_by_date(connection=con,date=data,)
 
-    if cur.rowcount == 0:
+    if affected_rows == 0:
         con.close()
         raise HTTPException(status_code=404, detail="Dia não encontrado")
 
