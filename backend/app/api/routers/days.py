@@ -4,8 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.database.connection import get_database_connection
 from app.schemas.day import DayCreate
-
-from app.repositories.day import find_days_by_month
+from app.repositories.day import find_day_by_date, find_days_by_month
 
 router = APIRouter(prefix="/dias", tags=["days"])
 
@@ -24,33 +23,29 @@ def list_days_by_month(ano: int, mes: int, con= Depends(get_database_connection)
 @router.get("/{data}")
 def get_day_by_date(data: str, con= Depends(get_database_connection)):
     """Busca a tabela DIAS no BANCO pela DATA, com as tarefas do dia"""
-    cur = con.cursor()
-    cur.execute(
-        "SELECT dias.id, dias.data, dias.frase_do_dia, dias.autor_frase, dias.minutos_estudados, dias.tipo, "
-        "tarefas.id, tarefas.descricao, tarefas.cumprida "
-        "FROM dias LEFT JOIN tarefas ON dias.id = tarefas.dia_id WHERE dias.data = ?",
-        (data,),
+    rows = find_day_by_date(
+        connection=con,
+        date=data,
     )
-    linhas = cur.fetchall()
     con.close()
-    if not linhas:
+    if not rows:
         raise HTTPException(status_code=404, detail="Dia não encontrado")
 
-    primeira = linhas[0]
-    resultado = {
-        "id": primeira[0],
-        "data": primeira[1],
-        "frase_do_dia": primeira[2],
-        "autor_frase": primeira[3],
-        "minutos_estudados": primeira[4],
-        "tipo": primeira[5],
+    first_row = rows[0]
+    result = {
+        "id": first_row[0],
+        "data": first_row[1],
+        "frase_do_dia": first_row[2],
+        "autor_frase": first_row[3],
+        "minutos_estudados": first_row[4],
+        "tipo": first_row[5],
         "tarefas": [
-            {"id": linha[6], "descricao": linha[7], "cumprida": linha[8]}
-            for linha in linhas
-            if linha[6] is not None
+            {"id": row[6], "descricao": row[7], "cumprida": row[8]}
+            for row in rows
+            if row[6] is not None
         ],
     }
-    return resultado
+    return result
 
 @router.post("", status_code=201)
 def create_day(dia: DayCreate, con= Depends(get_database_connection)):
