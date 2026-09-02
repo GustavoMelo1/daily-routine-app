@@ -8,12 +8,12 @@ const views = [
 
 export default function CalendarToolbar({ title, view, onViewChange, onPrevious, onNext, onToday }) {
   return (
-    <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"
           onClick={onPrevious}
-          className="rounded-lg border border-zinc-300 bg-white p-2 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950"
+          className="rounded-lg border border-zinc-300 bg-white p-2 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
           aria-label="Período anterior"
         >
           <ChevronLeft size={18} />
@@ -21,7 +21,7 @@ export default function CalendarToolbar({ title, view, onViewChange, onPrevious,
         <button
           type="button"
           onClick={onNext}
-          className="rounded-lg border border-zinc-300 bg-white p-2 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950"
+          className="rounded-lg border border-zinc-300 bg-white p-2 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
           aria-label="Próximo período"
         >
           <ChevronRight size={18} />
@@ -29,16 +29,16 @@ export default function CalendarToolbar({ title, view, onViewChange, onPrevious,
         <button
           type="button"
           onClick={onToday}
-          className="ml-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+          className="ml-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
         >
           Hoje
         </button>
-        <h1 className="ml-2 truncate text-xl font-semibold capitalize tracking-tight text-zinc-950 sm:text-2xl">
+        <h1 className="ml-2 truncate text-xl font-semibold capitalize tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-2xl">
           {title}
         </h1>
       </div>
 
-      <div className="inline-flex w-fit rounded-lg border border-zinc-300 bg-white p-1" aria-label="Visualização do calendário">
+      <div className="inline-flex w-fit rounded-lg border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900" aria-label="Visualização do calendário">
         {views.map((item) => (
           <button
             key={item.id}
@@ -46,8 +46,8 @@ export default function CalendarToolbar({ title, view, onViewChange, onPrevious,
             onClick={() => onViewChange(item.id)}
             className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               view === item.id
-                ? "bg-zinc-900 text-white"
-                : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950"
+                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950"
+                : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
             }`}
             aria-pressed={view === item.id}
           >

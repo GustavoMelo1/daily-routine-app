@@ -8,6 +8,7 @@ import DayPanel from "./components/DayPanel"
 import MonthView from "./components/MonthView"
 import StatusMessage from "./components/StatusMessage"
 import WeekView from "./components/WeekView"
+import useTheme from "./hooks/useTheme"
 import {
   getPeriodTitle,
   getRequiredMonths,
@@ -16,6 +17,7 @@ import {
 } from "./utils/date"
 
 function App() {
+  const { theme, toggleTheme } = useTheme()
   const [activeSection, setActiveSection] = useState("calendar")
   const [view, setView] = useState("month")
   const [cursorDate, setCursorDate] = useState(() => new Date())
@@ -92,7 +94,7 @@ function App() {
   }
 
   const dayPanel = (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
       <DayPanel
         date={selectedDate}
         day={selectedDay}
@@ -105,7 +107,12 @@ function App() {
   )
 
   return (
-    <AppShell activeSection={activeSection} onSectionChange={setActiveSection}>
+    <AppShell
+      activeSection={activeSection}
+      onSectionChange={setActiveSection}
+      theme={theme}
+      onThemeToggle={toggleTheme}
+    >
       {activeSection === "dashboard" ? (
         <Dashboard />
       ) : (
@@ -130,7 +137,7 @@ function App() {
           )}
 
           {recordsLoading && !recordsError && (
-            <div className="mt-5 h-1 overflow-hidden rounded-full bg-zinc-200" aria-label="Carregando calendário">
+            <div className="mt-5 h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800" aria-label="Carregando calendário">
               <div className="h-full w-1/3 animate-pulse rounded-full bg-blue-600" />
             </div>
           )}
