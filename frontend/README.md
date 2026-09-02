@@ -1,16 +1,36 @@
-# React + Vite
+# Daily Routine frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React and Tailwind interface for the Daily Routine API. It provides month,
+week and day calendar views, day/task management and period metrics without
+mocked application data.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Start the backend at `http://localhost:8000`, then run:
 
-## React Compiler
+```bash
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The frontend is available at `http://localhost:5173`.
 
-## Expanding the Oxlint configuration
+To use a different backend URL, create `.env.local`:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+## Checks
+
+```bash
+npm run lint
+npm run build
+```
+
+## Current API constraints
+
+- Day fields are read-only after creation because the API has no day update route.
+- Deleting a day removes its tasks first because the database relationship has no cascade delete.
+- Dashboard totals are calculated client-side from the month and day endpoints.
+- The streak requires study minutes above zero and at least one completed task.
