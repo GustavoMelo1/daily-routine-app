@@ -1,5 +1,7 @@
 # daily-routine-app
 
+[![Backend tests](https://github.com/GustavoMelo1/daily-routine-app/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/GustavoMelo1/daily-routine-app/actions/workflows/backend-tests.yml)
+
 Personal digital agenda (calendar, tasks, goals and daily quote) with its own FastAPI API and SQLite database, replacing a paper notebook. Includes a pipeline that reads a photo of the physical notebook and loads it straight into the database via the API.
 
 ## Target project structure
@@ -105,5 +107,4 @@ Fill in `GEMINI_API_KEY` in `.env` (get one at [aistudio.google.com](https://ais
 cd backend
 python -m pipeline.publicar
 ```
-
 
