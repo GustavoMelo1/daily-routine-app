@@ -2,26 +2,31 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.database.connection import get_database_connection
 from app.schemas.task import TaskCreate, TaskUpdate
-
+from app.repositories.task import delete_task_by_id, insert_task, update_task_completion
 
 router = APIRouter(prefix="/tarefas", tags=["tasks"])
 
 @router.post("", status_code=201)
 def create_task(tarefa: TaskCreate, con = Depends(get_database_connection)):
     """Cria uma nova TAREFA no BANCO"""
-    cur = con.cursor()
-    cur.execute("INSERT INTO tarefas (dia_id, descricao, cumprida) VALUES (?, ?, ? )", (tarefa.dia_id, tarefa.descricao, tarefa.cumprida))
+    task_id = insert_task(
+        connection=con,
+        day_id=tarefa.dia_id,
+        description=tarefa.descricao,
+        completed=tarefa.cumprida,
+    )
     con.commit()
-    new_id = cur.lastrowid
     con.close()
-    return {"id": new_id, "Status": "Tarefa Criada"}
+    return {"id": task_id, "Status": "Tarefa Criada"}
 
 @router.delete("/{id}")
 def delete_task(id: int, con = Depends(get_database_connection)):
     """Deleta a TAREFA do BANCO"""
-    cur = con.cursor()
-    cur.execute("DELETE FROM tarefas WHERE id = ?", (id,))
-    if cur.rowcount == 0:
+    affected_rows = delete_task_by_id(
+        connection=con,
+        task_id=id,
+    )
+    if affected_rows == 0:
         con.close()
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
     con.commit()
@@ -31,13 +36,12 @@ def delete_task(id: int, con = Depends(get_database_connection)):
 @router.patch("/{id}")
 def update_task(id: int, tarefa: TaskUpdate, con = Depends(get_database_connection)):
     """Atualiza se uma tarefa foi cumprida ou nao"""
-    cur = con.cursor()
-
-    cur.execute(
-        "UPDATE tarefas SET cumprida = ? WHERE id = ?",
-        (tarefa.cumprida, id)
+    affected_rows = update_task_completion(
+        connection=con,
+        task_id=id,
+        completed=tarefa.cumprida,
     )
-    if cur.rowcount == 0:
+    if affected_rows == 0:
         con.close()
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
     con.commit()
