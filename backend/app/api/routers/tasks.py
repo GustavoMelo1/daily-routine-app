@@ -17,7 +17,6 @@ def create_task(task: TaskCreate, connection=Depends(get_database_connection)):
         completed=task.cumprida,
     )
     connection.commit()
-    connection.close()
     return {"id": task_id, "Status": "Tarefa Criada"}
 
 @router.delete("/{id}")
@@ -28,10 +27,8 @@ def delete_task(id: int, connection=Depends(get_database_connection)):
         task_id=id,
     )
     if affected_rows == 0:
-        connection.close()
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
     connection.commit()
-    connection.close()
     return {"Status": "Tarefa Deletada"}
 
 @router.patch("/{id}")
@@ -47,9 +44,7 @@ def update_task(
         completed=task.cumprida,
     )
     if affected_rows == 0:
-        connection.close()
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
     connection.commit()
-    connection.close()
     return {"Status": "Tarefa Atualizada"}
 
