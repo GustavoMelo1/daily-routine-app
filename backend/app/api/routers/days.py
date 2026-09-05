@@ -16,7 +16,6 @@ def list_days_by_month(ano: int, mes: int, connection=Depends(get_database_conne
         year=ano,
         month=mes,
     )
-    connection.close()
     return [{"data": row[0], "marcador": row[1]} for row in day_rows]
 
 @router.get("/{data}")
@@ -26,7 +25,6 @@ def get_day_by_date(data: str, connection=Depends(get_database_connection)):
         connection=connection,
         date=data,
     )
-    connection.close()
     if not day_rows:
         raise HTTPException(status_code=404, detail="Dia não encontrado")
 
@@ -52,10 +50,8 @@ def create_day(day: DayCreate, connection=Depends(get_database_connection)):
     try:
         new_day_id = insert_day(connection=connection, date=day.data, studied_minutes=day.minutos_estudados, daily_quote=day.frase_do_dia, quote_author=day.autor_frase, day_type=day.tipo,)
         connection.commit()
-        connection.close()
         return {"dia": new_day_id, "Status": "Dia novo Criado"}
     except sqlite3.IntegrityError:
-        connection.close()
         raise HTTPException(status_code=400, detail="Dia ja existente")
 
 @router.delete("/{data}")
@@ -64,9 +60,7 @@ def delete_day(data: str, connection=Depends(get_database_connection)):
     affected_rows = delete_day_by_date(connection=connection,date=data,)
 
     if affected_rows == 0:
-        connection.close()
         raise HTTPException(status_code=404, detail="Dia não encontrado")
 
     connection.commit()
-    connection.close()
     return {"Status": "Dia Deletado"}
