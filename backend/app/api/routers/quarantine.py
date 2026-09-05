@@ -26,10 +26,8 @@ def create_quarantine_day(
             error_reason=day.motivo_erro,
         )
         connection.commit()
-        connection.close()
         return {"id": quarantine_day_id, "Status": "Dia enviado para quarentena"}
     except sqlite3.IntegrityError:
-        connection.close()
         raise HTTPException(status_code=400, detail="Dia já está na quarentena")
 
 @router.post("/tarefas-quarentena", status_code=201)
@@ -46,5 +44,4 @@ def create_quarantine_task(
         error_reason=task.motivo_erro,
     )
     connection.commit()
-    connection.close()
     return {"id": quarantine_task_id, "Status": "Tarefa em Quarentena"}
