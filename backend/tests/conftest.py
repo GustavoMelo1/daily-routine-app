@@ -22,7 +22,10 @@ def client(tmp_path):
     def conexao_teste():
         con = sqlite3.connect(caminho_banco)
         con.execute("PRAGMA foreign_keys = ON")
-        return con
+        try:
+            yield con
+        finally:
+            con.close()
 
     app.dependency_overrides[get_database_connection] = conexao_teste
 
