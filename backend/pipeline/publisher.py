@@ -5,7 +5,7 @@ from pipeline.vocabulary import repetitive_tasks
 from pipeline.validation import validate_day
 
 
-def publicar(result):
+def publish_days(result):
     for dia in result["dias"]:
         transform = dia.get("data")
         if isinstance(transform, str):
@@ -106,4 +106,4 @@ def publicar(result):
 
 if __name__ == "__main__":
     result = extract("exemplo.jpeg")
-    publicar(result)
+    publish_days(result)

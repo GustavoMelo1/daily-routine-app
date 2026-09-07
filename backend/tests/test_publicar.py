@@ -1,5 +1,5 @@
 from unittest.mock import Mock
-from pipeline.publicar import publicar
+from pipeline.publisher import publish_days
 
 def test_publicar_dia_valido(monkeypatch):
     """Publica um dia valido e confere as rotas normais chamadas"""
@@ -10,7 +10,7 @@ def test_publicar_dia_valido(monkeypatch):
         resposta.status_code = 404
         return resposta
 
-    monkeypatch.setattr("pipeline.publicar.requests.get",fake_get)   
+    monkeypatch.setattr("pipeline.publisher.requests.get",fake_get)   
 
     def fake_post(url, json):
         chamadas_post.append((url, json))
@@ -19,7 +19,7 @@ def test_publicar_dia_valido(monkeypatch):
         resposta.json.return_value = {"dia": 1}
         return resposta
 
-    monkeypatch.setattr("pipeline.publicar.requests.post",fake_post)
+    monkeypatch.setattr("pipeline.publisher.requests.post",fake_post)
 
     resultado = {
         "dias": [
@@ -34,7 +34,7 @@ def test_publicar_dia_valido(monkeypatch):
             }
         ]
     }
-    publicar(resultado)
+    publish_days(resultado)
     assert len(chamadas_post) == 2
     assert chamadas_post[0][0] == "http://localhost:8000/dias"
     assert chamadas_post[1][0] == "http://localhost:8000/tarefas"
@@ -46,7 +46,7 @@ def test_publicar_dia_invalido(monkeypatch):
     def fake_get(url):
         raise AssertionError("Dia invalido nao deve consultar a rota normal")
 
-    monkeypatch.setattr("pipeline.publicar.requests.get",fake_get)   
+    monkeypatch.setattr("pipeline.publisher.requests.get",fake_get)   
 
     def fake_post(url, json):
         chamadas_post.append((url, json))
@@ -55,7 +55,7 @@ def test_publicar_dia_invalido(monkeypatch):
         resposta.json.return_value = {"id": 1}
         return resposta
 
-    monkeypatch.setattr("pipeline.publicar.requests.post",fake_post)
+    monkeypatch.setattr("pipeline.publisher.requests.post",fake_post)
 
     resultado = {
         "dias": [
@@ -70,7 +70,7 @@ def test_publicar_dia_invalido(monkeypatch):
             }
         ]
     }
-    publicar(resultado)
+    publish_days(resultado)
     assert len(chamadas_post) == 2
     assert chamadas_post[0][0] == "http://localhost:8000/erros-quarentena"
     assert chamadas_post[1][0] == "http://localhost:8000/tarefas-quarentena"
