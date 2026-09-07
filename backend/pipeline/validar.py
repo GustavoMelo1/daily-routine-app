@@ -1,38 +1,38 @@
 from datetime import datetime
 
-def validar(dia):   
-    erros = []
-    if not dia.get("data"):
-        erros.append("data_ausente")
+def validar(day):
+    errors = []
+    if not day.get("data"):
+        errors.append("data_ausente")
     else:
         try:
-            datetime.strptime(dia["data"], "%Y-%m-%d")
+            datetime.strptime(day["data"], "%Y-%m-%d")
         except ValueError:
-            erros.append("data_invalida")
+            errors.append("data_invalida")
 
-    minutos = dia.get("minutos_estudados")
-    if minutos is None:
-        erros.append("minutos_ausentes")
+    studied_minutes = day.get("minutos_estudados")
+    if studied_minutes is None:
+        errors.append("minutos_ausentes")
 
-    elif not isinstance(minutos, int) or minutos < 0 or minutos > 1440:
-        erros.append("minutos_invalidos")
+    elif not isinstance(studied_minutes, int) or studied_minutes < 0 or studied_minutes > 1440:
+        errors.append("minutos_invalidos")
 
-    tarefas = dia.get("itens")
-    if not isinstance(tarefas, list) or not tarefas:
-        erros.append("tarefas_ausentes")
+    tasks = day.get("itens")
+    if not isinstance(tasks, list) or not tasks:
+        errors.append("tarefas_ausentes")
 
     else:
-        for itens in tarefas:
-            if not isinstance(itens, dict):
-                erros.append("tarefa_invalida")
+        for item in tasks:
+            if not isinstance(item, dict):
+                errors.append("tarefa_invalida")
                 continue
-            search_value = itens.get("texto")
-            if not isinstance(search_value, str) or not search_value.strip():
-                erros.append("tarefa_sem_descricao")
+            description = item.get("texto")
+            if not isinstance(description, str) or not description.strip():
+                errors.append("tarefa_sem_descricao")
 
-            search_status = itens.get("status")
-            status_validos = ["feito", "nao_feito", "aberto"]
-            if search_status not in status_validos:
-                erros.append("status_tarefa_invalido")
+            status = item.get("status")
+            valid_statuses = ["feito", "nao_feito", "aberto"]
+            if status not in valid_statuses:
+                errors.append("status_tarefa_invalido")
 
-    return erros
+    return errors
