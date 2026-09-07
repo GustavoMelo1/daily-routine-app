@@ -2,7 +2,7 @@ import difflib
 import requests
 from pipeline.ocr import extract
 from pipeline.vocabulary import repetitive_tasks
-from pipeline.validar import validar
+from pipeline.validation import validate_day
 
 
 def publicar(result):
@@ -13,7 +13,7 @@ def publicar(result):
         else:
             formatted = transform
         dia["data"] = formatted
-        erros = validar(dia)
+        erros = validate_day(dia)
         if erros:
             motivo_erro = ", ".join(erros)
             payload_erro = {

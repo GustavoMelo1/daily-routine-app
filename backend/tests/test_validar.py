@@ -1,4 +1,4 @@
-from pipeline.validar import validar
+from pipeline.validation import validate_day
 
 
 def test_dia_valido_nao_retorna_erros():
@@ -11,7 +11,7 @@ def test_dia_valido_nao_retorna_erros():
         ]
     }
 
-    resultado = validar(dia)
+    resultado = validate_day(dia)
 
     assert resultado == []
 
@@ -25,7 +25,7 @@ def test_dia_invalido_retorna_erros():
         ]
     }
 
-    resultado = validar(dia)
+    resultado = validate_day(dia)
 
     assert resultado == [
         "data_invalida",

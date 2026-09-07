@@ -1,6 +1,6 @@
 from datetime import datetime
 
-def validar(day):
+def validate_day(day):
     errors = []
     if not day.get("data"):
         errors.append("data_ausente")
