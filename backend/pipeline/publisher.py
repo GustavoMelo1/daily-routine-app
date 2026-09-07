@@ -1,6 +1,5 @@
 import difflib
 import requests
-from pipeline.ocr import extract
 from pipeline.vocabulary import repetitive_tasks
 from pipeline.validation import validate_day
 
@@ -103,7 +102,3 @@ def publish_days(result):
                 "cumprida": cumprida
             }
             requests.post("http://localhost:8000/tarefas", json=payload_tarefas)
-
-if __name__ == "__main__":
-    result = extract("exemplo.jpeg")
-    publish_days(result)
