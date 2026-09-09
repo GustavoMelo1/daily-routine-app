@@ -3,14 +3,15 @@ import requests
 from pipeline.vocabulary import repetitive_tasks
 from pipeline.validation import validate_day
 
+def normalize_date(raw_date):
+    if isinstance (raw_date, str):
+        return raw_date.replace("/", "-")
+    return raw_date
 
 def publish_days(extracted_data):
     for day in extracted_data["dias"]:
         raw_date = day.get("data")
-        if isinstance(raw_date, str):
-            normalized_date = raw_date.replace("/", "-")
-        else:
-            normalized_date = raw_date
+        normalized_date = normalize_date(raw_date)
         day["data"] = normalized_date
         validation_errors = validate_day(day)
         if validation_errors:
