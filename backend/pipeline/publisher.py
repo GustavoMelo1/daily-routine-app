@@ -8,6 +8,18 @@ def normalize_date(raw_date):
         return raw_date.replace("/", "-")
     return raw_date
 
+def build_quarantine_day_payload(day, validation_errors):
+    error_reason = ", ".join(validation_errors)
+    quarantine_day_payload = {
+            "data": day.get("data"),
+            "minutos_estudados": day.get("minutos_estudados"),
+            "frase_do_dia": day.get("frase_do_dia"),
+            "autor_frase": day.get("autor_frase"),
+            "tipo": "normal",
+            "motivo_erro": error_reason
+            }
+    return quarantine_day_payload
+
 def publish_days(extracted_data):
     for day in extracted_data["dias"]:
         raw_date = day.get("data")
@@ -15,15 +27,7 @@ def publish_days(extracted_data):
         day["data"] = normalized_date
         validation_errors = validate_day(day)
         if validation_errors:
-            error_reason = ", ".join(validation_errors)
-            quarantine_day_payload = {
-                "data": day.get("data"),
-                "minutos_estudados": day.get("minutos_estudados"),
-                "frase_do_dia": day.get("frase_do_dia"),
-                "autor_frase": day.get("autor_frase"),
-                "tipo": "normal",
-                "motivo_erro": error_reason
-            }
+            quarantine_day_payload = build_quarantine_day_payload(day, validation_errors)
             quarantine_day_response = requests.post("http://localhost:8000/erros-quarentena", json=quarantine_day_payload)
             if quarantine_day_response.status_code == 400:
                 continue
