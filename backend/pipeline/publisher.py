@@ -20,6 +20,39 @@ def build_quarantine_day_payload(day, validation_errors):
             }
     return quarantine_day_payload
 
+def build_quarantine_task_payload(item, quarantine_day_id):
+    if not isinstance(item, dict):
+        quarantine_task_payload = {
+            "erro_quarentena_id": quarantine_day_id,
+            "descricao": None,
+            "cumprida": None,
+            "motivo_erro": "tarefa_invalida"
+        }
+    else:
+        description = item.get("texto")
+        status = item.get("status")
+
+        if status == "feito":
+            completed = 1
+        elif status in ["nao_feito", "aberto"]:
+            completed = 0
+        else:
+            completed = None
+
+        task_errors = []
+        if not isinstance(description, str) or not description.strip():
+            task_errors.append("tarefa_sem_descricao")
+        if status not in ["feito", "nao_feito", "aberto"]:
+            task_errors.append("status_tarefa_invalido")
+
+        quarantine_task_payload = {
+            "erro_quarentena_id": quarantine_day_id,
+            "descricao": description,
+            "cumprida": completed,
+            "motivo_erro": ", ".join(task_errors) or None
+        }
+    return quarantine_task_payload
+
 def publish_days(extracted_data):
     for day in extracted_data["dias"]:
         raw_date = day.get("data")
@@ -37,36 +70,7 @@ def publish_days(extracted_data):
             tasks = day.get("itens")
             if isinstance(tasks, list):
                 for item in tasks:
-                    if not isinstance(item, dict):
-                        quarantine_task_payload = {
-                            "erro_quarentena_id": quarantine_day_id,
-                            "descricao": None,
-                            "cumprida": None,
-                            "motivo_erro": "tarefa_invalida"
-                        }
-                    else:
-                        description = item.get("texto")
-                        status = item.get("status")
-
-                        if status == "feito":
-                            completed = 1
-                        elif status in ["nao_feito", "aberto"]:
-                            completed = 0
-                        else:
-                            completed = None
-
-                        task_errors = []
-                        if not isinstance(description, str) or not description.strip():
-                            task_errors.append("tarefa_sem_descricao")
-                        if status not in ["feito", "nao_feito", "aberto"]:
-                            task_errors.append("status_tarefa_invalido")
-
-                        quarantine_task_payload = {
-                            "erro_quarentena_id": quarantine_day_id,
-                            "descricao": description,
-                            "cumprida": completed,
-                            "motivo_erro": ", ".join(task_errors) or None
-                        }
+                    quarantine_task_payload = build_quarantine_task_payload(item, quarantine_day_id)
 
                     quarantine_task_response = requests.post(
                         "http://localhost:8000/tarefas-quarentena",
