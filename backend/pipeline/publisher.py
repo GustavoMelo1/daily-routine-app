@@ -71,34 +71,34 @@ def publish_days(extracted_data):
 
             continue
 
-        checagem = requests.get(f"http://localhost:8000/dias/{normalized_date}")
-        if checagem.status_code == 200:
+        existing_day_response = requests.get(f"http://localhost:8000/dias/{normalized_date}")
+        if existing_day_response.status_code == 200:
             continue
 
-        payload_dia= {
+        day_payload = {
             "data": normalized_date,
             "minutos_estudados": day["minutos_estudados"],
             "frase_do_dia": day["frase_do_dia"],
             "autor_frase": day["autor_frase"],
             "tipo": "normal"
             }
-        response = requests.post("http://localhost:8000/dias", json=payload_dia)
-        get_id = response.json()['dia']
+        day_response = requests.post("http://localhost:8000/dias", json=day_payload)
+        day_id = day_response.json()['dia']
 
-        for itens in day["itens"]:
-            if itens["status"] == "feito":
+        for item in day["itens"]:
+            if item["status"] == "feito":
                 completed = 1
             else:
                 completed = 0
-            conference = difflib.get_close_matches(itens["texto"], repetitive_tasks)
-            if conference:
-                description = conference[0]
+            matches = difflib.get_close_matches(item["texto"], repetitive_tasks)
+            if matches:
+                description = matches[0]
             else:
-                description = itens["texto"]
+                description = item["texto"]
 
-            payload_tarefas = {
-                "dia_id": get_id,
+            task_payload = {
+                "dia_id": day_id,
                 "descricao": description,
                 "cumprida": completed
             }
-            requests.post("http://localhost:8000/tarefas", json=payload_tarefas)
+            requests.post("http://localhost:8000/tarefas", json=task_payload)
