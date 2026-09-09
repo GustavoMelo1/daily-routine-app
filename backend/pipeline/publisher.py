@@ -4,22 +4,22 @@ from pipeline.vocabulary import repetitive_tasks
 from pipeline.validation import validate_day
 
 
-def publish_days(result):
-    for dia in result["dias"]:
-        transform = dia.get("data")
-        if isinstance(transform, str):
-            formatted = transform.replace("/", "-")
+def publish_days(extracted_data):
+    for day in extracted_data["dias"]:
+        raw_date = day.get("data")
+        if isinstance(raw_date, str):
+            normalized_date = raw_date.replace("/", "-")
         else:
-            formatted = transform
-        dia["data"] = formatted
-        erros = validate_day(dia)
+            normalized_date = raw_date
+        day["data"] = normalized_date
+        erros = validate_day(day)
         if erros:
             motivo_erro = ", ".join(erros)
             payload_erro = {
-                "data": dia.get("data"),
-                "minutos_estudados": dia.get("minutos_estudados"),
-                "frase_do_dia": dia.get("frase_do_dia"),
-                "autor_frase": dia.get("autor_frase"),
+                "data": day.get("data"),
+                "minutos_estudados": day.get("minutos_estudados"),
+                "frase_do_dia": day.get("frase_do_dia"),
+                "autor_frase": day.get("autor_frase"),
                 "tipo": "normal",
                 "motivo_erro": motivo_erro
             }
@@ -29,7 +29,7 @@ def publish_days(result):
             response_erro.raise_for_status()
             erro_id = response_erro.json()['id']
 
-            tarefas = dia.get("itens")
+            tarefas = day.get("itens")
             if isinstance(tarefas, list):
                 for item in tarefas:
                     if not isinstance(item, dict):
@@ -71,21 +71,21 @@ def publish_days(result):
 
             continue
 
-        checagem = requests.get(f"http://localhost:8000/dias/{formatted}")
+        checagem = requests.get(f"http://localhost:8000/dias/{normalized_date}")
         if checagem.status_code == 200:
             continue
 
-        payload_dia = {
-            "data": formatted,
-            "minutos_estudados": dia["minutos_estudados"],
-            "frase_do_dia": dia["frase_do_dia"],
-            "autor_frase": dia["autor_frase"],
+        payload_dia= {
+            "data": normalized_date,
+            "minutos_estudados": day["minutos_estudados"],
+            "frase_do_dia": day["frase_do_dia"],
+            "autor_frase": day["autor_frase"],
             "tipo": "normal"
             }
         response = requests.post("http://localhost:8000/dias", json=payload_dia)
         get_id = response.json()['dia']
 
-        for itens in dia["itens"]:
+        for itens in day["itens"]:
             if itens["status"] == "feito":
                 cumprida = 1
             else:
