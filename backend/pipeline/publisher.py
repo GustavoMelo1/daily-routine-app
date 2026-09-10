@@ -53,6 +53,16 @@ def build_quarantine_task_payload(item, quarantine_day_id):
         }
     return quarantine_task_payload
 
+def build_day_payload(day):
+    day_payload = {
+        "data": day["data"],
+        "minutos_estudados": day["minutos_estudados"],
+        "frase_do_dia": day["frase_do_dia"],
+        "autor_frase": day["autor_frase"],
+        "tipo": "normal"
+        }
+    return day_payload
+
 def publish_days(extracted_data):
     for day in extracted_data["dias"]:
         raw_date = day.get("data")
@@ -84,13 +94,7 @@ def publish_days(extracted_data):
         if existing_day_response.status_code == 200:
             continue
 
-        day_payload = {
-            "data": normalized_date,
-            "minutos_estudados": day["minutos_estudados"],
-            "frase_do_dia": day["frase_do_dia"],
-            "autor_frase": day["autor_frase"],
-            "tipo": "normal"
-            }
+        day_payload = build_day_payload(day)
         day_response = requests.post("http://localhost:8000/dias", json=day_payload)
         day_id = day_response.json()['dia']
 
