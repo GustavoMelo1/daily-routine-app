@@ -63,6 +63,24 @@ def build_day_payload(day):
         }
     return day_payload
 
+def build_task_payload(item, day_id):
+    if item["status"] == "feito":
+        completed = 1
+    else:
+        completed = 0
+    matches = difflib.get_close_matches(item["texto"], repetitive_tasks)
+    if matches:
+        description = matches[0]
+    else:
+        description = item["texto"]
+    
+    task_payload = {
+        "dia_id": day_id,
+        "descricao": description,
+        "cumprida": completed
+    }
+    return task_payload
+        
 def publish_days(extracted_data):
     for day in extracted_data["dias"]:
         raw_date = day.get("data")
@@ -99,19 +117,5 @@ def publish_days(extracted_data):
         day_id = day_response.json()['dia']
 
         for item in day["itens"]:
-            if item["status"] == "feito":
-                completed = 1
-            else:
-                completed = 0
-            matches = difflib.get_close_matches(item["texto"], repetitive_tasks)
-            if matches:
-                description = matches[0]
-            else:
-                description = item["texto"]
-
-            task_payload = {
-                "dia_id": day_id,
-                "descricao": description,
-                "cumprida": completed
-            }
+            task_payload = build_task_payload(item, day_id)
             requests.post("http://localhost:8000/tarefas", json=task_payload)
