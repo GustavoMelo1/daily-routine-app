@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_getdia(client, dicionario_dias):
     """Cria um dia, busca ele pela data e confere, depois deleta"""
     dicionario = {**dicionario_dias, "data": "2026-08-03"}
@@ -55,3 +58,34 @@ def test_deletedia_404(client):
     resposta = client.delete("/dias/2027-10-01")
 
     assert resposta.status_code == 404
+
+
+@pytest.mark.parametrize("minutes", [0, 1440])
+def test_create_day_accepts_minute_boundaries(client, dicionario_dias, minutes):
+    payload = {
+        **dicionario_dias,
+        "data": "2026-08-05",
+        "minutos_estudados": minutes,
+    }
+
+    response = client.post("/dias", json=payload)
+
+    assert response.status_code == 201
+
+
+@pytest.mark.parametrize("minutes", [-1, 1441])
+def test_create_day_rejects_out_of_range_minutes(client, dicionario_dias, minutes):
+    payload = {
+        **dicionario_dias,
+        "data": "2026-08-05",
+        "minutos_estudados": minutes,
+    }
+
+    response = client.post("/dias", json=payload)
+
+    assert response.status_code == 422
+    assert any(
+        error["loc"] == ["body", "minutos_estudados"]
+        for error in response.json()["detail"]
+    )
+    assert client.get("/dias/2026-08-05").status_code == 404
