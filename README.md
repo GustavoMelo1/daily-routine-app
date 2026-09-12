@@ -39,6 +39,7 @@ daily-routine-app/
 │   ├── pipeline/
 │   │   ├── batch.py
 │   │   ├── ocr.py
+│   │   ├── payloads.py
 │   │   ├── publisher.py
 │   │   ├── validation.py
 │   │   └── vocabulary.py
