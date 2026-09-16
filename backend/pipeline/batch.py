@@ -10,6 +10,11 @@ def find_image_files(folder_path):
         if file_path.is_file() and file_path.suffix.lower() in image_extensions:
             image_files.append(file_path)
     return image_files
+
+def process_folder(folder_path):
+    image_files = find_image_files(folder_path)
+    for image_path in image_files:
+        result = extract(str(image_path))
+        publish_days(result)
 if __name__ == "__main__":
-    result = extract("exemplo.jpeg")
-    publish_days(result)
+    process_folder("images")
