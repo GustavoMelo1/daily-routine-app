@@ -164,8 +164,10 @@ See [frontend/README.md](frontend/README.md) for frontend configuration and chec
 
 ### Pipeline
 
-Start the backend and configure a valid `GEMINI_API_KEY` first. Place the image
-at `backend/exemplo.jpeg` (or change the image path in `pipeline/batch.py`).
+Start the backend and configure a valid `GEMINI_API_KEY` first. Create
+`backend/images/` and place your `.jpg`, `.jpeg` or `.png` photos directly inside
+it. Uppercase extensions are accepted; subfolders and other files are skipped.
+This folder is ignored by Git.
 
 From the repository root:
 
@@ -174,7 +176,11 @@ cd backend
 python -m pipeline.batch
 ```
 
-The command reads the photo with Gemini and publishes the validated records.
+The command processes one photo at a time with Gemini, publishing valid days
+and sending invalid records to quarantine. If processing a photo raises an
+error, the batch continues with the next one and prints the failed file paths
+and error messages at the end. Records already saved before a failure are not
+rolled back.
 
 ### Tests and CI
 
