@@ -13,8 +13,18 @@ def find_image_files(folder_path):
 
 def process_folder(folder_path):
     image_files = find_image_files(folder_path)
+    failures = []
     for image_path in image_files:
-        result = extract(str(image_path))
-        publish_days(result)
+        try:
+            result = extract(str(image_path))
+            publish_days(result)
+        except Exception as error:
+            failures.append({
+                "image_path": str(image_path),
+                "error": str(error),
+            })
+    return failures
 if __name__ == "__main__":
-    process_folder("images")
+    failures = process_folder("images")
+    for failure in failures:
+        print(f"Falha em {failure['image_path']}: {failure['error']}")
