@@ -50,6 +50,7 @@ daily-routine-app/
 │   │   │   ├── test_tasks.py
 │   │   │   └── test_quarantine.py
 │   │   ├── pipeline/
+│   │   │   ├── test_batch.py
 │   │   │   ├── test_publisher.py
 │   │   │   └── test_validation.py
 │   │   └── conftest.py
@@ -181,6 +182,9 @@ and sending invalid records to quarantine. If processing a photo raises an
 error, the batch continues with the next one and prints the failed file paths
 and error messages at the end. Records already saved before a failure are not
 rolled back.
+
+An invalid folder path stops the command with an error message. If the folder
+contains no supported images, it prints a message and exits without calling OCR.
 
 ### Tests and CI
 
