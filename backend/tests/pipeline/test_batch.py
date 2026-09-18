@@ -1,0 +1,61 @@
+import pytest
+from pipeline.batch import find_image_files, process_folder
+from unittest.mock import Mock
+
+
+def test_find_image_files_rejects_missing_folder(tmp_path):
+    missing_folder = tmp_path / "missing"
+
+    with pytest.raises(NotADirectoryError, match="Pasta de imagens inválida"):
+        find_image_files(missing_folder)
+
+def test_find_image_files_filters_images(tmp_path):
+    (tmp_path / "foto.JPG").touch()
+    (tmp_path / "pagina.jpeg").touch()
+    (tmp_path / "outra.png").touch()
+    (tmp_path / "notas.txt").touch()
+    (tmp_path / "pasta.jpg").mkdir()
+
+    image_files = find_image_files(tmp_path)
+
+    assert {path.name for path in image_files} == {
+        "foto.JPG",
+        "pagina.jpeg",
+        "outra.png",
+    }
+
+def test_process_folder_skips_empty_folder(tmp_path, monkeypatch, capsys):
+    fake_extract = Mock()
+    fake_publish = Mock()
+    monkeypatch.setattr("pipeline.batch.extract", fake_extract)
+    monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
+
+    failures = process_folder(tmp_path)
+
+    assert failures == []
+    fake_extract.assert_not_called()
+    fake_publish.assert_not_called()
+    assert "Nenhuma imagem encontrada" in capsys.readouterr().out
+
+def test_process_folder_continues_after_ocr_failure(tmp_path, monkeypatch):
+    image_paths = [
+        tmp_path / "primeira.jpg",
+        tmp_path / "segunda.jpg",
+        tmp_path / "terceira.jpg",
+    ]
+    monkeypatch.setattr(
+        "pipeline.batch.find_image_files",
+        Mock(return_value=image_paths),
+    )
+    first_result = {"dias": [{"data": "2026-08-25"}]}
+    third_result = {"dias": [{"data": "2026-08-27"}]}
+
+    fake_extract = Mock(side_effect=[
+        first_result,
+        ValueError("Falha no OCR"),
+        third_result,
+    ])
+    fake_publish = Mock()
+
+    monkeypatch.setattr("pipeline.batch.extract", fake_extract)
+    monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
