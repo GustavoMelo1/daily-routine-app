@@ -59,3 +59,51 @@ def test_process_folder_continues_after_ocr_failure(tmp_path, monkeypatch):
 
     monkeypatch.setattr("pipeline.batch.extract", fake_extract)
     monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
+    failures = process_folder(tmp_path)
+
+    assert failures == [{
+        "image_path": str(image_paths[1]),
+        "error": "Falha no OCR",
+    }]
+    assert fake_extract.call_count == 3
+    assert fake_publish.call_count == 2
+    assert fake_publish.call_args_list[0].args[0] == first_result
+    assert fake_publish.call_args_list[1].args[0] == third_result
+
+def test_process_folder_continues_after_publication_failure(tmp_path, monkeypatch):
+    image_paths = [
+        tmp_path / "primeira.jpg",
+        tmp_path / "segunda.jpg",
+        tmp_path / "terceira.jpg",
+    ]
+    monkeypatch.setattr(
+        "pipeline.batch.find_image_files",
+        Mock(return_value=image_paths),
+    )
+    first_result = {"dias": [{"data": "2026-08-25"}]}
+    second_result = {"dias": [{"data": "2026-08-26"}]}
+    third_result = {"dias": [{"data": "2026-08-27"}]}
+
+    fake_extract = Mock(side_effect=[
+        first_result,
+        second_result,
+        third_result,
+    ])
+    fake_publish = Mock(side_effect=[
+        None,
+        RuntimeError("Falha na publicação"),
+        None,
+    ])
+    monkeypatch.setattr("pipeline.batch.extract", fake_extract)
+    monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
+    failures = process_folder(tmp_path)
+
+    assert failures == [{
+        "image_path": str(image_paths[1]),
+        "error": "Falha na publicação",
+    }]
+    assert fake_extract.call_count == 3
+    assert fake_publish.call_count == 3
+    assert fake_publish.call_args_list[0].args[0] == first_result
+    assert fake_publish.call_args_list[1].args[0] == second_result
+    assert fake_publish.call_args_list[2].args[0] == third_result
