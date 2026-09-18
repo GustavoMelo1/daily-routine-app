@@ -13,11 +13,13 @@ def normalize_date(raw_date):
 def publish_valid_day(day):
     day_payload = build_day_payload(day)
     day_response = requests.post(f"{API_BASE_URL}/dias", json=day_payload)
+    day_response.raise_for_status()
     day_id = day_response.json()['dia']
     
     for item in day["itens"]:
         task_payload = build_task_payload(item, day_id)
-        requests.post(f"{API_BASE_URL}/tarefas", json=task_payload)
+        task_response = requests.post(f"{API_BASE_URL}/tarefas", json=task_payload)
+        task_response.raise_for_status()
     
 
 def publish_quarantine_day(day, validation_errors):
@@ -52,5 +54,6 @@ def publish_days(extracted_data):
         existing_day_response = requests.get(f"{API_BASE_URL}/dias/{normalized_date}")
         if existing_day_response.status_code == 200:
             continue
-
+        if existing_day_response.status_code != 404:
+            existing_day_response.raise_for_status()         
         publish_valid_day(day)
