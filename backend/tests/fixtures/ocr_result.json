@@ -1,0 +1,22 @@
+{
+  "dias": [
+    {
+      "data": "2026/08/25",
+      "minutos_estudados": 60,
+      "frase_do_dia": "Um passo por dia.",
+      "autor_frase": "Exemplo",
+      "itens": [
+        {"texto": "Estudar SQL", "status": "feito"}
+      ]
+    },
+    {
+      "data": "2026-08-26",
+      "minutos_estudados": 1500,
+      "frase_do_dia": "Registro para revisão.",
+      "autor_frase": "Exemplo",
+      "itens": [
+        {"texto": "Ler livro", "status": "aberto"}
+      ]
+    }
+  ]
+}
