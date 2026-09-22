@@ -10,6 +10,7 @@ import StatusMessage from "./components/StatusMessage"
 import WeekView from "./components/WeekView"
 import useTheme from "./hooks/useTheme"
 import {
+  fromIsoDate,
   getPeriodTitle,
   getRequiredMonths,
   shiftDate,
@@ -101,6 +102,14 @@ function App() {
     if (toIsoDate(date) !== selectedDate) navigate(() => setCursorDate(date))
   }
 
+  function handleOpenDay(date) {
+    navigate(() => {
+      setCursorDate(fromIsoDate(date))
+      setView("day")
+      setActiveSection("calendar")
+    })
+  }
+
   const dayPanel = (
     <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
       <DayPanel
@@ -125,7 +134,7 @@ function App() {
       onThemeToggle={toggleTheme}
     >
       {activeSection === "dashboard" ? (
-        <Dashboard />
+        <Dashboard onOpenDay={handleOpenDay} />
       ) : (
         <div>
           <CalendarToolbar

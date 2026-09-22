@@ -23,7 +23,7 @@ function StatCard({ label, value, helper, icon: Icon }) {
   )
 }
 
-export default function Dashboard() {
+export default function Dashboard({ onOpenDay }) {
   const [periodDate, setPeriodDate] = useState(() => new Date())
   const [days, setDays] = useState([])
   const [loading, setLoading] = useState(true)
@@ -181,7 +181,7 @@ export default function Dashboard() {
                   const completed = day.tarefas.filter((task) => Number(task.cumprida) === 1).length
                   const qualifies = day.minutos_estudados > 0 && completed > 0
                   return (
-                    <div key={day.id} className="grid gap-3 px-5 py-4 sm:grid-cols-[110px_1fr_1fr_auto] sm:items-center">
+                    <div key={day.id} className="grid gap-3 px-5 py-4 xl:grid-cols-[110px_1fr_1fr_auto_auto] xl:items-center">
                       <span className="text-sm font-semibold capitalize text-zinc-800 dark:text-zinc-200">{formatCompactDate(day.data)}</span>
                       <span className="text-sm text-zinc-600 dark:text-zinc-400">Estudo: {day.minutos_estudados} min</span>
                       <span className="text-sm text-zinc-600 dark:text-zinc-400">Tarefas: {completed}/{day.tarefas.length}</span>
@@ -190,6 +190,14 @@ export default function Dashboard() {
                       }`}>
                         {qualifies ? "Conta na sequência" : "Fora da sequência"}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => onOpenDay(day.data)}
+                        aria-label={`Ver dia ${formatCompactDate(day.data)}`}
+                        className="w-fit rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 dark:border-zinc-700 dark:text-blue-400 dark:hover:bg-blue-950/50"
+                      >
+                        Ver dia
+                      </button>
                     </div>
                   )
                 })}
