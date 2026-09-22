@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { getApiErrorMessage, getDay, getDaysByMonth } from "./api/client"
 import AppShell from "./components/AppShell"
@@ -28,6 +28,14 @@ function App() {
   const [dayLoading, setDayLoading] = useState(true)
   const [dayError, setDayError] = useState("")
   const [refreshKey, setRefreshKey] = useState(0)
+  const navigationGuard = useRef(null)
+  const registerNavigationGuard = useCallback((guard) => {
+    navigationGuard.current = guard
+  }, [])
+
+  function navigate(action) {
+    if (!navigationGuard.current || navigationGuard.current()) action()
+  }
 
   const selectedDate = toIsoDate(cursorDate)
   const requiredMonths = useMemo(
@@ -90,7 +98,7 @@ function App() {
   }
 
   function handleSelectDate(date) {
-    setCursorDate(date)
+    if (toIsoDate(date) !== selectedDate) navigate(() => setCursorDate(date))
   }
 
   const dayPanel = (
@@ -102,6 +110,7 @@ function App() {
         error={dayError}
         onRetry={refreshData}
         onChanged={refreshData}
+        onNavigationGuardChange={registerNavigationGuard}
       />
     </div>
   )
@@ -109,7 +118,9 @@ function App() {
   return (
     <AppShell
       activeSection={activeSection}
-      onSectionChange={setActiveSection}
+      onSectionChange={(section) => {
+        if (section !== activeSection) navigate(() => setActiveSection(section))
+      }}
       theme={theme}
       onThemeToggle={toggleTheme}
     >
@@ -120,10 +131,12 @@ function App() {
           <CalendarToolbar
             title={getPeriodTitle(cursorDate, view)}
             view={view}
-            onViewChange={setView}
-            onPrevious={() => setCursorDate((current) => shiftDate(current, view, -1))}
-            onNext={() => setCursorDate((current) => shiftDate(current, view, 1))}
-            onToday={() => setCursorDate(new Date())}
+            onViewChange={(nextView) => {
+              if (nextView !== view) navigate(() => setView(nextView))
+            }}
+            onPrevious={() => handleSelectDate(shiftDate(cursorDate, view, -1))}
+            onNext={() => handleSelectDate(shiftDate(cursorDate, view, 1))}
+            onToday={() => handleSelectDate(new Date())}
           />
 
           {recordsError && (

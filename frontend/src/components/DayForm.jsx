@@ -10,10 +10,32 @@ const initialForm = {
   tipo: "normal",
 }
 
-export default function DayForm({ date, onCreated }) {
+export default function DayForm({ date, onCreated, onNavigationGuardChange }) {
   const [form, setForm] = useState(initialForm)
   const [error, setError] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const dirty = Object.keys(initialForm).some((field) => form[field] !== initialForm[field])
+
+  useEffect(() => {
+    function canNavigate() {
+      if (submitting) {
+        window.alert("Aguarde o término do envio antes de sair deste dia.")
+        return false
+      }
+      return !dirty || window.confirm("Descartar os dados não salvos deste dia?")
+    }
+    function handleBeforeUnload(event) {
+      if (!dirty && !submitting) return
+      event.preventDefault()
+      event.returnValue = ""
+    }
+    onNavigationGuardChange?.(canNavigate)
+    if (dirty || submitting) window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => {
+      onNavigationGuardChange?.(null)
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+    }
+  }, [dirty, submitting, onNavigationGuardChange])
 
   useEffect(() => {
     setForm(initialForm)
@@ -45,6 +67,7 @@ export default function DayForm({ date, onCreated }) {
         autor_frase: form.autor_frase.trim(),
         tipo: form.tipo.trim(),
       })
+      setForm(initialForm)
       onCreated()
     } catch (requestError) {
       setError(getApiErrorMessage(requestError))

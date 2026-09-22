@@ -25,7 +25,7 @@ function LoadingPanel() {
   )
 }
 
-export default function DayPanel({ date, day, loading, error, onRetry, onChanged }) {
+export default function DayPanel({ date, day, loading, error, onRetry, onChanged, onNavigationGuardChange }) {
   const [taskDescription, setTaskDescription] = useState("")
   const [actionError, setActionError] = useState("")
   const [busyAction, setBusyAction] = useState("")
@@ -46,7 +46,7 @@ export default function DayPanel({ date, day, loading, error, onRetry, onChanged
       </div>
     )
   }
-  if (!day) return <DayForm date={date} onCreated={onChanged} />
+  if (!day) return <DayForm date={date} onCreated={onChanged} onNavigationGuardChange={onNavigationGuardChange} />
 
   async function handleCreateTask(event) {
     event.preventDefault()
