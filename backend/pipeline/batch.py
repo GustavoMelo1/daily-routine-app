@@ -1,6 +1,9 @@
+import logging
 from pipeline.ocr import extract
 from pipeline.publisher import publish_days
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 def find_image_files(folder_path):
     folder = Path(folder_path)
@@ -14,26 +17,27 @@ def find_image_files(folder_path):
     return image_files
 
 def process_folder(folder_path):
+    logger.info("Iniciando processamento de pasta: %s", folder_path)
     image_files = find_image_files(folder_path)
     if not image_files:
-        print(f"Nenhuma imagem encontrada em: {folder_path}")
+        logger.info("Nenhuma imagem encontrada em: %s", folder_path)
         return []
     failures = []
     for image_path in image_files:
+        logger.info("Processando imagem: %s", image_path)
         try:
             result = extract(str(image_path))
             publish_days(result)
+            logger.info("Processamento concluído sem exceção: %s", image_path)
         except Exception as error:
-            failures.append({
-                "image_path": str(image_path),
-                "error": str(error),
-            })
+            logger.exception("Falha ao processar imagem: %s", image_path)
+            failures.append({"image_path": str(image_path),"error": str(error),})
     return failures
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO,format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",)
     try:
         failures = process_folder("images")
     except NotADirectoryError as error:
         raise SystemExit(str(error))
     else:
-        for failure in failures:
-            print(f"Falha em {failure['image_path']}: {failure['error']}")
+        logger.info("Lote encerrado. Imagens com falha: %s", len(failures))

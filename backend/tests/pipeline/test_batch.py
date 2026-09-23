@@ -1,4 +1,5 @@
 import pytest
+import logging
 from pipeline.batch import find_image_files, process_folder
 from unittest.mock import Mock
 
@@ -24,29 +25,28 @@ def test_find_image_files_filters_images(tmp_path):
         "outra.png",
     }
 
-def test_process_folder_skips_empty_folder(tmp_path, monkeypatch, capsys):
+def test_process_folder_skips_empty_folder(tmp_path, monkeypatch, caplog):
     fake_extract = Mock()
     fake_publish = Mock()
     monkeypatch.setattr("pipeline.batch.extract", fake_extract)
     monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
-
+    caplog.set_level(logging.INFO, logger="pipeline.batch")
     failures = process_folder(tmp_path)
 
     assert failures == []
     fake_extract.assert_not_called()
     fake_publish.assert_not_called()
-    assert "Nenhuma imagem encontrada" in capsys.readouterr().out
+    assert "Nenhuma imagem encontrada" in caplog.text
 
-def test_process_folder_continues_after_ocr_failure(tmp_path, monkeypatch):
+def test_process_folder_continues_after_ocr_failure(tmp_path, monkeypatch, caplog):
     image_paths = [
         tmp_path / "primeira.jpg",
         tmp_path / "segunda.jpg",
         tmp_path / "terceira.jpg",
     ]
-    monkeypatch.setattr(
-        "pipeline.batch.find_image_files",
-        Mock(return_value=image_paths),
-    )
+    monkeypatch.setattr("pipeline.batch.find_image_files",Mock(return_value=image_paths),)
+    caplog.set_level(logging.INFO, logger="pipeline.batch")
+
     first_result = {"dias": [{"data": "2026-08-25"}]}
     third_result = {"dias": [{"data": "2026-08-27"}]}
 
