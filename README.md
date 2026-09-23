@@ -195,5 +195,9 @@ python -m pytest -q
 ```
 
 Tests cover the API, validation and publication flow without calling Gemini.
+A fictional OCR result in `backend/tests/fixtures/ocr_result.json` exercises
+date normalization and routing to normal publication or quarantine, with
+HTTP calls mocked.
+
 GitHub Actions runs them on every push and pull request; click the badge above
 to see the results.
