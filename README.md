@@ -178,13 +178,14 @@ python -m pipeline.batch
 ```
 
 The command processes one photo at a time with Gemini, publishing valid days
-and sending invalid records to quarantine. If processing a photo raises an
-error, the batch continues with the next one and prints the failed file paths
-and error messages at the end. Records already saved before a failure are not
-rolled back.
+and sending invalid records to quarantine. Console logs include timestamps,
+severity and module names, tracking batch start and image processing.
+Image failures include a traceback; processing continues with the next photo,
+and the final summary reports the number of failed images.
+Records already saved before a failure are not rolled back.
 
-An invalid folder path stops the command with an error message. If the folder
-contains no supported images, it prints a message and exits without calling OCR.
+An invalid folder path logs an error and exits with code 1. A folder without
+supported images logs an informational message without calling OCR.
 
 ### Tests and CI
 
