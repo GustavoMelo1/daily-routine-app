@@ -74,6 +74,16 @@ def test_process_folder_continues_after_ocr_failure(tmp_path, monkeypatch, caplo
     assert f"Processamento concluído sem exceção: {image_paths[1]}" not in caplog.messages
     assert f"Processamento concluído sem exceção: {image_paths[2]}" in caplog.messages
 
+    error_records = [
+        record for record in caplog.records
+        if record.name == "pipeline.batch" and record.levelno == logging.ERROR
+    ]
+
+    assert len(error_records) == 1
+    assert error_records[0].exc_info is not None
+    assert error_records[0].exc_info[0] is ValueError
+    assert error_records[0].exc_info[2] is not None
+
 def test_process_folder_continues_after_publication_failure(tmp_path, monkeypatch):
     image_paths = [
         tmp_path / "primeira.jpg",
