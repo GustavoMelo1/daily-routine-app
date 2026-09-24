@@ -1,5 +1,6 @@
 import pytest
 import json 
+import logging
 from pathlib import Path
 from requests.exceptions import HTTPError
 from unittest.mock import Mock
@@ -169,7 +170,7 @@ def test_publish_days_stops_on_task_creation_error(monkeypatch):
     assert fake_post.call_args_list[0].args[0] == "http://localhost:8000/dias"
     assert fake_post.call_args_list[1].args[0] == "http://localhost:8000/tarefas"
 
-def test_publish_days_from_example_file(monkeypatch):
+def test_publish_days_from_example_file(monkeypatch, caplog):
     fixture_path = Path(__file__).resolve().parents[1] / "fixtures" / "ocr_result.json"
     extracted_data = json.loads(fixture_path.read_text(encoding="utf-8"))
 
@@ -194,6 +195,7 @@ def test_publish_days_from_example_file(monkeypatch):
     monkeypatch.setattr("pipeline.publisher.requests.get", fake_get)
     monkeypatch.setattr("pipeline.publisher.requests.post", fake_post)
 
+    caplog.set_level(logging.INFO, logger="pipeline.publisher")
     publish_days(extracted_data)
 
     fake_get.assert_called_once_with("http://localhost:8000/dias/2026-08-25")
@@ -223,3 +225,6 @@ def test_publish_days_from_example_file(monkeypatch):
     assert quarantine_task_payload["descricao"] == "Ler livro"
     assert quarantine_task_payload["cumprida"] == 0
     assert quarantine_task_payload["motivo_erro"] is None
+
+    assert "Dia e tarefas publicados: 2026-08-25" in caplog.messages
+    assert "Registro enviado à quarentena: id=20, data=2026-08-26" in caplog.messages
