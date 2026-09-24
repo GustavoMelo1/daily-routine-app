@@ -70,6 +70,10 @@ def test_process_folder_continues_after_ocr_failure(tmp_path, monkeypatch, caplo
     assert fake_publish.call_args_list[0].args[0] == first_result
     assert fake_publish.call_args_list[1].args[0] == third_result
 
+    assert f"Falha ao processar imagem: {image_paths[1]}" in caplog.messages
+    assert f"Processamento concluído sem exceção: {image_paths[1]}" not in caplog.messages
+    assert f"Processamento concluído sem exceção: {image_paths[2]}" in caplog.messages
+
 def test_process_folder_continues_after_publication_failure(tmp_path, monkeypatch):
     image_paths = [
         tmp_path / "primeira.jpg",
