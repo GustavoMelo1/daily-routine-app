@@ -38,6 +38,7 @@ if __name__ == "__main__":
     try:
         failures = process_folder("images")
     except NotADirectoryError as error:
-        raise SystemExit(str(error))
+        logger.error("Não foi possível iniciar o lote: %s", error)
+        raise SystemExit(1)
     else:
         logger.info("Lote encerrado. Imagens com falha: %s", len(failures))
