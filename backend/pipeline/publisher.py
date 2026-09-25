@@ -1,11 +1,21 @@
 import requests
 import logging
 from pipeline.validation import validate_day
-from pipeline.payloads import (build_quarantine_day_payload, build_quarantine_task_payload, build_day_payload, build_task_payload)
+from pipeline.payloads import build_quarantine_day_payload, build_quarantine_task_payload, build_day_payload, build_task_payload
+from datetime import date
 
 logger = logging.getLogger(__name__)
 
 API_BASE_URL = "http://localhost:8000"
+
+def check_api_availability():
+    today = date.today()
+    response = requests.get(
+        f"{API_BASE_URL}/dias",
+        params={"ano": today.year, "mes": today.month},
+        timeout=5,
+    )
+    response.raise_for_status()
 
 def normalize_date(raw_date):
     if isinstance (raw_date, str):

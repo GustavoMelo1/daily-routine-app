@@ -1,6 +1,7 @@
 import logging
 from pipeline.ocr import extract
-from pipeline.publisher import publish_days
+from pipeline.publisher import publish_days, check_api_availability
+from requests.exceptions import RequestException
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ def process_folder(folder_path):
     if not image_files:
         logger.info("Nenhuma imagem encontrada em: %s", folder_path)
         return []
+    check_api_availability()
     failures = []
     for image_path in image_files:
         logger.info("Processando imagem: %s", image_path)
@@ -39,6 +41,9 @@ if __name__ == "__main__":
         failures = process_folder("images")
     except NotADirectoryError as error:
         logger.error("Não foi possível iniciar o lote: %s", error)
+        raise SystemExit(1)
+    except RequestException as error:
+        logger.error("Falha na checagem da API; lote não iniciado: %s", error)
         raise SystemExit(1)
     else:
         logger.info("Lote encerrado. Imagens com falha: %s", len(failures))
