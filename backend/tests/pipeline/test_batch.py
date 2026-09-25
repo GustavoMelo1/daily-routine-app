@@ -59,6 +59,7 @@ def test_process_folder_continues_after_ocr_failure(tmp_path, monkeypatch, caplo
 
     monkeypatch.setattr("pipeline.batch.extract", fake_extract)
     monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
+    monkeypatch.setattr("pipeline.batch.check_api_availability", Mock())
     failures = process_folder(tmp_path)
 
     assert failures == [{
@@ -110,6 +111,7 @@ def test_process_folder_continues_after_publication_failure(tmp_path, monkeypatc
     ])
     monkeypatch.setattr("pipeline.batch.extract", fake_extract)
     monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
+    monkeypatch.setattr("pipeline.batch.check_api_availability", Mock())
     failures = process_folder(tmp_path)
 
     assert failures == [{
