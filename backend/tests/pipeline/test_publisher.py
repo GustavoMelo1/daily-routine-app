@@ -228,3 +228,30 @@ def test_publish_days_from_example_file(monkeypatch, caplog):
 
     assert "Dia e tarefas publicados: 2026-08-25" in caplog.messages
     assert "Registro enviado à quarentena: id=20, data=2026-08-26" in caplog.messages
+
+def test_publish_days_logs_existing_day(monkeypatch, caplog):
+    lookup_response = Mock()
+    lookup_response.status_code = 200
+    fake_get = Mock(return_value=lookup_response)
+    fake_post = Mock()
+
+    monkeypatch.setattr("pipeline.publisher.requests.get", fake_get)
+    monkeypatch.setattr("pipeline.publisher.requests.post", fake_post)
+    caplog.set_level(logging.INFO, logger="pipeline.publisher")
+    
+    extracted_data = {
+        "dias": [{
+            "data": "2026-08-25",
+            "minutos_estudados": 60,
+            "frase_do_dia": "Teste",
+            "autor_frase": "Exemplo",
+            "itens": [{"texto": "Estudar SQL", "status": "feito"}],
+        }]
+    }
+
+    publish_days(extracted_data)
+
+    fake_get.assert_called_once_with("http://localhost:8000/dias/2026-08-25")
+    fake_post.assert_not_called()
+    assert "Dia já existente, publicação ignorada: 2026-08-25" in caplog.messages
+    assert "Dia e tarefas publicados: 2026-08-25" not in caplog.messages
