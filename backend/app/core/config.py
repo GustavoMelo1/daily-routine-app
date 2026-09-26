@@ -1,10 +1,10 @@
 import os
-
 from dotenv import load_dotenv
 
 
 load_dotenv()
 
+PATH_DB = os.path.join("data", "financas.db")
 
 def get_database_url() -> str:
     """Return the configured database URL."""
