@@ -6,6 +6,7 @@ from requests.exceptions import HTTPError
 from unittest.mock import Mock
 from pipeline.publisher import publish_days, check_api_availability
 from datetime import date
+from pipeline.publisher import publish_days, check_api_availability, publish_quarantine_day
 
 def test_publicar_dia_valido(monkeypatch):
     """Publica um dia valido e confere as rotas normais chamadas"""
@@ -281,3 +282,21 @@ def test_check_api_availability_propagates_http_error(monkeypatch):
 
     with pytest.raises(HTTPError, match="API com erro"):
         check_api_availability()
+
+def test_publish_quarantine_day_propagates_bad_request(monkeypatch):
+    response = Mock()
+    response.status_code = 400
+    response.raise_for_status.side_effect = HTTPError("Quarentena rejeitada")
+    fake_post = Mock(return_value=response)
+    monkeypatch.setattr("pipeline.publisher.requests.post", fake_post)
+    day = {
+        "data": "2026-09-28",
+        "minutos_estudados": -20,
+        "itens": [{"texto": "Estudar SQL", "status": "feito"}],
+    }
+
+    with pytest.raises(HTTPError, match="Quarentena rejeitada"):
+        publish_quarantine_day(day, ["minutos_invalidos"])
+
+    fake_post.assert_called_once()
+    response.json.assert_not_called()

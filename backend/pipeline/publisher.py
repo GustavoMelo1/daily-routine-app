@@ -39,8 +39,6 @@ def publish_valid_day(day):
 def publish_quarantine_day(day, validation_errors):
     quarantine_day_payload = build_quarantine_day_payload(day, validation_errors)
     quarantine_day_response = requests.post(f"{API_BASE_URL}/erros-quarentena", json=quarantine_day_payload)
-    if quarantine_day_response.status_code == 400:
-        return
     quarantine_day_response.raise_for_status()
     quarantine_day_id = quarantine_day_response.json()['id']
 
