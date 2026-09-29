@@ -2,6 +2,7 @@ import pytest
 import logging
 from pipeline.batch import find_image_files, process_folder
 from unittest.mock import Mock
+from requests.exceptions import ConnectionError
 
 
 def test_find_image_files_rejects_missing_folder(tmp_path):
@@ -123,3 +124,18 @@ def test_process_folder_continues_after_publication_failure(tmp_path, monkeypatc
     assert fake_publish.call_args_list[0].args[0] == first_result
     assert fake_publish.call_args_list[1].args[0] == second_result
     assert fake_publish.call_args_list[2].args[0] == third_result
+
+def test_process_folder_stops_when_api_is_unavailable(tmp_path, monkeypatch):
+    (tmp_path / "foto.jpg").touch()
+    fake_check = Mock(side_effect=ConnectionError("API indisponível"))
+    monkeypatch.setattr("pipeline.batch.check_api_availability", fake_check)
+    fake_extract = Mock()
+    fake_publish = Mock()
+    monkeypatch.setattr("pipeline.batch.extract", fake_extract)
+    monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
+    with pytest.raises(ConnectionError, match="API indisponível"):
+        process_folder(tmp_path)
+
+    fake_check.assert_called_once()
+    fake_extract.assert_not_called()
+    fake_publish.assert_not_called()
