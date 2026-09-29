@@ -4,7 +4,8 @@ import logging
 from pathlib import Path
 from requests.exceptions import HTTPError
 from unittest.mock import Mock
-from pipeline.publisher import publish_days
+from pipeline.publisher import publish_days, check_api_availability
+from datetime import date
 
 def test_publicar_dia_valido(monkeypatch):
     """Publica um dia valido e confere as rotas normais chamadas"""
@@ -255,3 +256,28 @@ def test_publish_days_logs_existing_day(monkeypatch, caplog):
     fake_post.assert_not_called()
     assert "Dia já existente, publicação ignorada: 2026-08-25" in caplog.messages
     assert "Dia e tarefas publicados: 2026-08-25" not in caplog.messages
+
+def test_check_api_availability_queries_api(monkeypatch):
+    response = Mock()
+    fake_get = Mock(return_value=response)
+    monkeypatch.setattr("pipeline.publisher.requests.get", fake_get)
+    fake_date = Mock()
+    fake_date.today.return_value = date(2026, 9, 28)
+    monkeypatch.setattr("pipeline.publisher.date", fake_date)
+    check_api_availability()
+
+    fake_get.assert_called_once_with(
+        "http://localhost:8000/dias",
+        params={"ano": 2026, "mes": 9},
+        timeout=5,
+    )
+    response.raise_for_status.assert_called_once()
+
+def test_check_api_availability_propagates_http_error(monkeypatch):
+    response = Mock()
+    response.raise_for_status.side_effect = HTTPError("API com erro")
+    fake_get = Mock(return_value=response)
+    monkeypatch.setattr("pipeline.publisher.requests.get", fake_get)
+
+    with pytest.raises(HTTPError, match="API com erro"):
+        check_api_availability()
