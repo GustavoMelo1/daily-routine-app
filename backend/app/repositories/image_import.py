@@ -23,3 +23,31 @@ def insert_image_import(
         (image_hash,),
     )
     return cursor.lastrowid
+
+def start_image_import(
+    connection: sqlite3.Connection,
+    import_id: int,
+):
+    cursor = connection.cursor()
+    cursor.execute(
+        "UPDATE image_imports "
+        "SET status = 'processing', updated_at = CURRENT_TIMESTAMP "
+        "WHERE id = ? AND status = 'pending'",
+        (import_id,),
+    )
+    return cursor.rowcount
+
+def fail_image_import(
+    connection: sqlite3.Connection,
+    import_id: int,
+    error_message: str,
+):
+    cursor = connection.cursor()
+    cursor.execute(
+        "UPDATE image_imports "
+        "SET status = 'failed', error_message = ?, "
+        "updated_at = CURRENT_TIMESTAMP "
+        "WHERE id = ? AND status = 'processing'",
+        (error_message, import_id),
+    )
+    return cursor.rowcount
