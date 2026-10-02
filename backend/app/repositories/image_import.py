@@ -12,3 +12,14 @@ def find_image_import_by_hash(
         (image_hash,),
     )
     return cursor.fetchone()
+
+def insert_image_import(
+    connection: sqlite3.Connection,
+    image_hash: str,
+):
+    cursor = connection.cursor()
+    cursor.execute(
+        "INSERT INTO image_imports (image_hash) VALUES (?)",
+        (image_hash,),
+    )
+    return cursor.lastrowid
