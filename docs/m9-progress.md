@@ -41,9 +41,15 @@ temporários. Não há novas rotas nem integração do controle com o lote.
 
 ### Próxima sessão
 
-Criar a função de inserção de importações e seus testes; depois definir as
-transições de estado e a integração pelo backend. Planejar a aplicação da
-migração com backup e verificação de preservação dos dados existentes.
+Atualização em 02/10/2026: a inserção de importações e seu teste já foram
+concluídos. Também foram adicionadas as transições `pending` → `processing`
+e `processing` → `failed`, com atualização de data e registro do erro.
+Os testes cobrem início único, gravação do erro e preservação de um registro
+ainda pendente quando se tenta marcá-lo como falha.
+
+Retomar pela transição de conclusão e seus testes; ainda faltam novas
+tentativas e integração pelo backend. Planejar a aplicação da migração com
+backup e verificação de preservação dos dados existentes.
 
 Manter o cálculo de hash. O leitor JSON e seus testes ainda existem, mas
 não estão ligados ao lote; removê-los quando a substituição estiver pronta.
