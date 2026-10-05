@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-from app.repositories.image_import import find_image_import_by_hash, insert_image_import, start_image_import, fail_image_import
+from app.repositories.image_import import find_image_import_by_hash, insert_image_import, start_image_import, fail_image_import, complete_image_import
 
 
 def test_insert_image_import_returns_id_and_starts_pending(tmp_path):
@@ -112,5 +112,39 @@ def test_fail_image_import_does_not_change_pending_import(tmp_path):
         assert affected_rows == 0
         assert row[2] == "pending"
         assert row[3] is None
+    finally:
+        connection.close()
+
+def test_complete_image_import_finishes_processing_import(tmp_path):
+    schema_path = Path(__file__).resolve().parents[2] / "db/schema.sql"
+    connection = sqlite3.connect(tmp_path / "test.db")
+
+    try:
+        connection.executescript(schema_path.read_text(encoding="utf-8"))
+        import_id = insert_image_import(connection, "a" * 64)
+        start_image_import(connection, import_id)
+
+        affected_rows = complete_image_import(connection, import_id)
+        row = find_image_import_by_hash(connection, "a" * 64)
+
+        assert affected_rows == 1
+        assert row[2] == "completed"
+        assert row[3] is None
+    finally:
+        connection.close()
+
+def test_complete_image_import_does_not_change_pending_import(tmp_path):
+    schema_path = Path(__file__).resolve().parents[2] / "db/schema.sql"
+    connection = sqlite3.connect(tmp_path / "test.db")
+
+    try:
+        connection.executescript(schema_path.read_text(encoding="utf-8"))
+        import_id = insert_image_import(connection, "a" * 64)
+
+        affected_rows = complete_image_import(connection, import_id)
+        row = find_image_import_by_hash(connection, "a" * 64)
+
+        assert affected_rows == 0
+        assert row[2] == "pending"
     finally:
         connection.close()

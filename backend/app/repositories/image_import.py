@@ -51,3 +51,17 @@ def fail_image_import(
         (error_message, import_id),
     )
     return cursor.rowcount
+
+def complete_image_import(
+    connection: sqlite3.Connection,
+    import_id: int,
+):
+    cursor = connection.cursor()
+    cursor.execute(
+        "UPDATE image_imports "
+        "SET status = 'completed', error_message = NULL, "
+        "updated_at = CURRENT_TIMESTAMP "
+        "WHERE id = ? AND status = 'processing'",
+        (import_id,),
+    )
+    return cursor.rowcount
