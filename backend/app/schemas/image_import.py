@@ -26,3 +26,10 @@ class ImageImportPublish(BaseModel):
         if not self.days and not self.quarantine_days:
             raise ValueError("A importação precisa conter ao menos um registro")
         return self
+
+class ImageImportCreate(BaseModel):
+    image_hash: str = Field(
+        min_length=64,
+        max_length=64,
+        pattern="^[0-9a-f]+$",
+    )
