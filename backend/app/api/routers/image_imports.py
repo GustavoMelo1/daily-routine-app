@@ -1,7 +1,7 @@
 import sqlite3
 
 from fastapi import APIRouter, Depends, HTTPException
-
+from app.repositories.image_import import find_image_import_by_id, start_image_import
 from app.database.connection import get_database_connection
 from app.repositories.image_import import insert_image_import
 from app.schemas.image_import import ImageImportCreate
@@ -50,3 +50,26 @@ def get_image_import_by_hash(
         "status": row[2],
         "error_message": row[3],
     }
+
+@router.post("/{import_id}/start")
+def start_import(
+    import_id: int,
+    connection=Depends(get_database_connection),
+):
+    row = find_image_import_by_id(connection, import_id)
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Importação não encontrada",
+        )
+
+    affected_rows = start_image_import(connection, import_id)
+    if affected_rows == 0:
+        connection.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="A importação não está pendente",
+        )
+
+    connection.commit()
+    return {"id": import_id, "status": "processing"}

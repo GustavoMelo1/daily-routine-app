@@ -54,3 +54,45 @@ def test_get_image_import_returns_registered_image(client):
         "status": "pending",
         "error_message": None,
     }
+
+def test_start_image_import_changes_status(client):
+    image_hash = "a" * 64
+    created = client.post(
+        "/image-imports",
+        json={"image_hash": image_hash},
+    )
+    assert created.status_code == 201
+    import_id = created.json()["id"]
+
+    response = client.post(f"/image-imports/{import_id}/start")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "id": import_id,
+        "status": "processing",
+    }
+
+    lookup = client.get(f"/image-imports/by-hash/{image_hash}")
+    assert lookup.status_code == 200
+    assert lookup.json()["status"] == "processing"
+
+def test_start_image_import_rejects_second_start(client):
+    created = client.post(
+        "/image-imports",
+        json={"image_hash": "a" * 64},
+    )
+    assert created.status_code == 201
+    import_id = created.json()["id"]
+
+    first_response = client.post(f"/image-imports/{import_id}/start")
+    second_response = client.post(f"/image-imports/{import_id}/start")
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 409
+    assert second_response.json()["detail"] == "A importação não está pendente"
+
+def test_start_image_import_returns_not_found(client):
+    response = client.post("/image-imports/999/start")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Importação não encontrada"
