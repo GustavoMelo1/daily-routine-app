@@ -65,3 +65,15 @@ def complete_image_import(
         (import_id,),
     )
     return cursor.rowcount
+
+def find_image_import_by_id(
+    connection: sqlite3.Connection,
+    import_id: int,
+):
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT id, image_hash, status, error_message "
+        "FROM image_imports WHERE id = ?",
+        (import_id,),
+    )
+    return cursor.fetchone()
