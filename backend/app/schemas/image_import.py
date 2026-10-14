@@ -1,13 +1,29 @@
 from app.schemas.day import DayCreate
 from app.schemas.quarantine import QuarantineDayCreate
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, field_validator
+from datetime import date
 
 class ImageImportTaskCreate(BaseModel):
-    descricao: str
-    cumprida: int = Field(ge=0, le=1)
+    descricao: str = Field(min_length=1)
+    cumprida: int = Field(ge=0, le=1, strict=True)
+
+    @field_validator("descricao")
+    @classmethod
+    def require_description(cls, value):
+        if not value.strip():
+            raise ValueError("Descrição vazia")
+        return value
 
 class ImageImportDayCreate(DayCreate):
     tarefas: list[ImageImportTaskCreate] = Field(min_length=1)
+
+    @field_validator("data")
+    @classmethod
+    def require_iso_date(cls, value):
+        parsed = date.fromisoformat(value)
+        if value != parsed.isoformat():
+            raise ValueError("Use YYYY-MM-DD")
+        return value
 
 class ImageImportQuarantineTaskCreate(BaseModel):
     descricao: str | None = None
@@ -33,3 +49,7 @@ class ImageImportCreate(BaseModel):
         max_length=64,
         pattern="^[0-9a-f]+$",
     )
+
+
+class ImageImportFailure(BaseModel):
+    error_message: str = Field(min_length=1, max_length=2000)

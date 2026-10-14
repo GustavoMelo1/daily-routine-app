@@ -1,4 +1,6 @@
 import sqlite3
+import hashlib
+import json
 
 from app.repositories.day import insert_day
 from app.repositories.task import insert_task
@@ -7,6 +9,7 @@ from app.repositories.quarantine import insert_quarantine_day, insert_quarantine
 from app.schemas.image_import import ImageImportQuarantineDayCreate
 from app.repositories.image_import import complete_image_import
 from app.schemas.image_import import ImageImportPublish
+from app.repositories.image_import import get_import_attempt
 
 def save_import_day(
     connection: sqlite3.Connection,
@@ -60,11 +63,22 @@ def publish_image_import(
     connection: sqlite3.Connection,
     import_id: int,
     payload: ImageImportPublish,
+    attempt_token: str | None = None,
 ):
     if connection.in_transaction:
         raise ValueError("A conexão já possui uma transação aberta")
 
+    serialized = json.dumps(payload.model_dump(), sort_keys=True, ensure_ascii=False)
+    digest = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
     with connection:
+        connection.execute("BEGIN IMMEDIATE")
+        attempt = get_import_attempt(connection, import_id)
+        if attempt is None:
+            raise ValueError("Importação não encontrada")
+        if attempt[0] == "completed" and attempt[3] == digest and attempt[1] == attempt_token:
+            return
+        if attempt[0] != "processing" or attempt[1] != attempt_token:
+            raise ValueError("A importação não está em processamento nesta tentativa")
         for day in payload.days:
             save_import_day(connection, day)
 
@@ -74,4 +88,8 @@ def publish_image_import(
         affected_rows = complete_image_import(connection, import_id)
         if affected_rows != 1:
             raise ValueError("A importação não está em processamento")
+        connection.execute(
+            "UPDATE image_imports SET publication_digest = ?, extracted_payload = ? WHERE id = ?",
+            (digest, serialized, import_id),
+        )
 

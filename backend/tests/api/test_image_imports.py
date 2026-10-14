@@ -67,10 +67,9 @@ def test_start_image_import_changes_status(client):
     response = client.post(f"/image-imports/{import_id}/start")
 
     assert response.status_code == 200
-    assert response.json() == {
-        "id": import_id,
-        "status": "processing",
-    }
+    assert response.json()["id"] == import_id
+    assert response.json()["status"] == "processing"
+    assert len(response.json()["attempt_token"]) == 32
 
     lookup = client.get(f"/image-imports/by-hash/{image_hash}")
     assert lookup.status_code == 200
