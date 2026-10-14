@@ -1,8 +1,9 @@
-import { BarChart3, CalendarDays, Moon, Sun } from "lucide-react"
+import { BarChart3, CalendarDays, Moon, Sun, TrendingUp } from "lucide-react"
 
 const navigation = [
   { id: "calendar", label: "Calendário", icon: CalendarDays },
   { id: "dashboard", label: "Painel", icon: BarChart3 },
+  { id: "evolution", label: "Evolução", icon: TrendingUp },
 ]
 
 function Navigation({ activeSection, onChange }) {
@@ -65,9 +66,9 @@ export default function AppShell({ activeSection, onSectionChange, theme, onThem
 
       <div className="md:pl-60">
         <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 md:hidden">
-          <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
             <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Daily Routine</span>
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1">
               <nav className="flex gap-1" aria-label="Navegação principal">
                 <Navigation activeSection={activeSection} onChange={onSectionChange} />
               </nav>

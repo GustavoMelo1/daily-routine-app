@@ -89,3 +89,17 @@ export function getApiErrorMessage(error) {
   if (error instanceof ApiError) return error.message
   return "Ocorreu um erro inesperado. Tente novamente."
 }
+
+export const listWeeklyReports = (signal) => request('/weekly-reports', { signal })
+export const getWeeklyReport = (id, signal) => request(`/weekly-reports/${id}`, { signal })
+export const saveWeeklyReport = (report) => request(
+  report.id ? `/weekly-reports/${report.id}` : '/weekly-reports',
+  { method: report.id ? 'PUT' : 'POST', body: report },
+)
+export const deleteWeeklyReport = (id) => request(`/weekly-reports/${id}`, { method: 'DELETE' })
+export const getWeeklyComparison = (id, previousId, signal) => request(
+  `/weekly-reports/${id}/comparison?previous_report_id=${previousId}`, { signal },
+)
+export const compareWeeklyReports = (id, previousId) => request(
+  `/weekly-reports/${id}/compare`, { method: 'POST', body: { previous_report_id: previousId } },
+)
