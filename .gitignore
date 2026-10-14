@@ -17,3 +17,5 @@ dist/
 
 exemplo.jpeg
 /backend/images/
+/backend/logs/
+*.backup

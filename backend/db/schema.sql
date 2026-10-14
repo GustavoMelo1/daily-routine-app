@@ -1,3 +1,25 @@
+CREATE TABLE weekly_reports (
+    id INTEGER PRIMARY KEY,
+    report_date TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    content TEXT NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE weekly_comparisons (
+    id INTEGER PRIMARY KEY,
+    previous_report_id INTEGER NOT NULL REFERENCES weekly_reports(id) ON DELETE CASCADE,
+    current_report_id INTEGER NOT NULL REFERENCES weekly_reports(id) ON DELETE CASCADE,
+    previous_version INTEGER NOT NULL,
+    current_version INTEGER NOT NULL,
+    result_json TEXT NOT NULL,
+    model TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(previous_report_id, current_report_id, previous_version, current_version)
+);
+
 CREATE TABLE dias(
 id INTEGER PRIMARY KEY,
 data TEXT UNIQUE, 
@@ -58,5 +80,8 @@ CREATE TABLE image_imports (
         CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
     error_message TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    attempt_token TEXT,
+    extracted_payload TEXT,
+    publication_digest TEXT
 );

@@ -1,17 +1,8 @@
-import sqlite3
-import os
+"""Initialize or migrate without dropping existing data."""
+if __package__:
+    from .migrate import main
+else:
+    from migrate import main
 
-path = os.path.dirname(__file__)
-db_path = os.path.join(path, "rotina.db")
-schema_path = os.path.join(path, "schema.sql")
-
-con = sqlite3.connect(db_path)
-cur = con.cursor()
-cur.execute("PRAGMA foreign_keys = ON;")
-
-with open(schema_path, "r") as f:
-    schema_sql = f.read()
-
-cur.executescript(schema_sql)
-con.commit()
-con.close()
+if __name__ == "__main__":
+    main()
