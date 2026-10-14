@@ -2,203 +2,187 @@
 
 [![Backend tests](https://github.com/GustavoMelo1/daily-routine-app/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/GustavoMelo1/daily-routine-app/actions/workflows/backend-tests.yml)
 
-I created this project to turn my handwritten notebook entries into a digital agenda. I wanted a way to follow my tasks and study time over the weeks while keeping the habit of writing on paper.
+I created this project to turn my handwritten notebook entries into a digital
+agenda. I wanted to follow my tasks and study time over the weeks while keeping
+the habit of writing on paper.
 
-The app brings those records into a calendar, with daily tasks, quotes and monthly study totals. A photo of the notebook starts the import: Gemini reads the page, the pipeline checks the data, and the API saves the records.
+A photo starts the import: Gemini reads the page, the pipeline validates the
+result, and the API saves days and tasks or sends incomplete records to quarantine.
+The calendar shows month, week and day views, alongside monthly study metrics.
 
-## Current project structure
+The **Evolução** area also keeps the weekly Markdown reports I prepare outside
+the app. Comparing two reports helps me see what changed, with excerpts from
+both weeks instead of a productivity score.
 
-The main parts of the project:
+## Stack
+
+- Backend: Python, FastAPI, Pydantic and SQLite.
+- Pipeline and weekly comparisons: Google Gemini (`google-genai`).
+- Frontend: React, Vite and Tailwind, with light/dark themes.
+- Tests: pytest and Vitest; GitHub Actions runs backend and frontend checks.
+
+## Structure
 
 ```text
 daily-routine-app/
-├── .github/workflows/backend-tests.yml
+├── .github/workflows/
+│   ├── backend-tests.yml
+│   └── frontend-tests.yml
 ├── backend/
 │   ├── app/
-│   │   ├── api/
-│   │   │   └── routers/
-│   │   │       ├── days.py
-│   │   │       ├── tasks.py
-│   │   │       └── quarantine.py
+│   │   ├── api/routers/
+│   │   │   ├── days.py
+│   │   │   ├── tasks.py
+│   │   │   ├── quarantine.py
+│   │   │   ├── image_imports.py
+│   │   │   └── weekly_reports.py
 │   │   ├── core/
-│   │   │   └── config.py
 │   │   ├── database/
-│   │   │   └── connection.py
 │   │   ├── repositories/
-│   │   │   ├── day.py
-│   │   │   ├── task.py
-│   │   │   └── quarantine.py
 │   │   ├── schemas/
-│   │   │   ├── day.py
-│   │   │   ├── task.py
-│   │   │   └── quarantine.py
+│   │   ├── services/
 │   │   └── main.py
 │   ├── db/
+│   │   ├── migrations/
 │   │   ├── init_db.py
+│   │   ├── migrate.py
 │   │   └── schema.sql
 │   ├── pipeline/
 │   │   ├── batch.py
+│   │   ├── import_client.py
 │   │   ├── ocr.py
 │   │   ├── payloads.py
 │   │   ├── publisher.py
+│   │   ├── tracking.py
 │   │   ├── validation.py
 │   │   └── vocabulary.py
+│   ├── scripts/
+│   │   ├── install_schedule.ps1
+│   │   └── run_batch.ps1
 │   ├── tests/
-│   │   ├── api/
-│   │   │   ├── conftest.py
-│   │   │   ├── test_days.py
-│   │   │   ├── test_tasks.py
-│   │   │   └── test_quarantine.py
-│   │   ├── pipeline/
-│   │   │   ├── test_batch.py
-│   │   │   ├── test_publisher.py
-│   │   │   └── test_validation.py
-│   │   └── conftest.py
 │   ├── .env.example
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
 │   │   ├── api/
 │   │   ├── components/
+│   │   │   └── evolution/
 │   │   ├── hooks/
 │   │   ├── utils/
-│   │   ├── App.jsx
-│   │   └── index.css
-│   ├── package.json
-│   └── README.md
+│   │   └── App.jsx
+│   └── package.json
+├── docs/
+│   ├── import-operations.md
+│   ├── weekly-evolution.md
+│   └── m11-refactor.md
 ├── pytest.ini
 └── README.md
 ```
 
-## Stack
+Routes handle HTTP, schemas validate requests, repositories contain SQL, and
+services coordinate transactions and comparisons. The pipeline talks to the API;
+it does not open the application database directly.
 
-**Backend**
-
-- Python + FastAPI
-- SQLite
-- pytest
-- python-dotenv
-
-**Pipeline**
-
-- Google Gemini API (`google-genai`)
-- difflib (stdlib)
-
-**Frontend**
-
-- React + Vite + Tailwind
-- Calendar (month/week/day), day creation/deletion, task management and monthly metrics connected to the API.
-- Light/dark themes with the selected preference saved in the browser.
-
-## Layered architecture
-
-```text
-React frontend / pipeline publisher
-                |
-                v
-FastAPI routers -> repositories -> SQLite
-       |
-       +-- Pydantic schemas: request types
-       +-- Database dependency: connection lifecycle
-```
-
-## Quarantine flow
-
-Handwriting can produce incomplete or incorrect data. Before publishing a day,
-the pipeline checks its date, study minutes and tasks. A valid day goes to the
-agenda; a day with validation errors goes to quarantine along with its tasks
-and the reasons it was rejected.
-
-The API stores these records through `POST /erros-quarentena` and
-`POST /tarefas-quarentena`, with status `pendente` and a `motivo_erro`.
-For example, negative study minutes produce the error `minutos_invalidos`.
-
-Reviewing, correcting and republishing quarantined records is still pending.
-There is no review screen or automatic reprocessing yet.
-
-## How to run
-
-Clone the repository:
-   ```
-   git clone https://github.com/GustavoMelo1/daily-routine-app.git
-   cd daily-routine-app
-   ```
+## Run locally
 
 ### Backend
 
-   ```
-   cd backend
-   python -m pip install -r requirements.txt
-   ```
+From the repository root:
 
-Copy `backend/.env.example` to `backend/.env` and use uppercase `DB_URL`:
+```powershell
+cd backend
+python -m pip install -r requirements.txt
+```
+
+Copy `.env.example` to `.env` and configure:
 
 ```env
 DB_URL=db/rotina.db
 GEMINI_API_KEY=your-gemini-api-key
+GEMINI_OCR_MODEL=gemini-3.6-flash
+GEMINI_COMPARISON_MODEL=gemini-3.6-flash
+API_BASE_URL=http://localhost:8000
 ```
 
-From `backend`, initialize a new database once, then start the API:
+Then initialize or migrate the database and start the API:
 
-   ```
-   python db/init_db.py
-   python -m uvicorn app.main:app --reload
-   ```
+```powershell
+python db/migrate.py
+python -m uvicorn app.main:app --reload
+```
 
-If the database already exists, skip initialization. API documentation is at
-`http://localhost:8000/docs`.
-
-Fill in `GEMINI_API_KEY` in `.env` (get one at [aistudio.google.com](https://aistudio.google.com)) to run the pipeline.
+The migrator backs up existing databases before changing their structure.
+Stop active writers before migrating. API docs: `http://localhost:8000/docs`.
+Choose models available to your Gemini account; the API key stays in the backend.
 
 ### Frontend
 
-In a separate terminal, starting from the repository root:
+In a separate terminal, from the repository root:
 
-   ```
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-Open `http://localhost:5173`. Keep the backend running at `http://localhost:8000`.
-See [frontend/README.md](frontend/README.md) for frontend configuration and checks.
-
-### Pipeline
-
-Start the backend and configure a valid `GEMINI_API_KEY` first. Create
-`backend/images/` and place your `.jpg`, `.jpeg` or `.png` photos directly inside
-it. Uppercase extensions are accepted; subfolders and other files are skipped.
-This folder is ignored by Git.
-
-From the repository root:
-
+```powershell
+cd frontend
+npm ci
+npm run dev
 ```
-cd backend
+
+Open `http://localhost:5173`. Keep the API at `http://localhost:8000`.
+This is a local, single-user app without authentication; do not expose the API
+directly to the internet.
+
+### Images and daily import
+
+Put `.jpg`, `.jpeg` or `.png` files directly in `backend/images/`, then run from
+`backend`:
+
+```powershell
 python -m pipeline.batch
 ```
 
-The command processes one photo at a time with Gemini, publishing valid days
-and sending invalid records to quarantine. Console logs include timestamps,
-severity and module names, tracking batch start and image processing.
-Image failures include a traceback; processing continues with the next photo,
-and the final summary reports the number of failed images.
-Records already saved before a failure are not rolled back.
+Completed images are skipped by content hash. A publication failure rolls back
+that image's records; a saved OCR payload is reused on retry. Existing dates are
+not silently overwritten. Logs are written to `backend/logs/batch.log`.
 
-An invalid folder path logs an error and exits with code 1. A folder without
-supported images logs an informational message without calling OCR.
+To install the Windows task for **every day at 20:00**, from `backend`:
 
-### Tests and CI
-
-Run from the repository root or from `backend`:
-
-```bash
-python -m pytest -q
+```powershell
+.\scripts\install_schedule.ps1 -PythonPath (Get-Command python).Source -Time '20:00'
 ```
 
-Tests cover the API, validation and publication flow without calling Gemini.
-A fictional OCR result in `backend/tests/fixtures/ocr_result.json` exercises
-date normalization and routing to normal publication or quarantine, with
-HTTP calls mocked.
+The task requires the computer on and the user signed in. It starts a temporary
+local API if needed. [Recovery, backups and scheduling details](docs/import-operations.md).
 
-GitHub Actions runs them on every push and pull request; click the badge above
-to see the results.
+### Weekly evolution
+
+Open **Evolução**, import a UTF-8 `.md`, check its date/title and save. Importing
+does not call AI. With two reports available, select an earlier week and choose
+**Gerar comparação com IA**. This explicitly sends both texts to Gemini and may
+consume your quota. Saved comparisons are reused until a source report changes.
+
+The app does not scan repositories: you prepare those reports outside it.
+[Workflow, API and comparison limits](docs/weekly-evolution.md).
+
+## Quarantine
+
+Invalid dates, study minutes or tasks are stored with the reason for rejection
+and status `pendente`. They are not published as normal days. Reviewing,
+correcting and republishing quarantine still needs a dedicated workflow; there
+is no quarantine review screen yet.
+
+## Tests
+
+From the repository root:
+
+```powershell
+python -m pytest -q
+cd frontend
+npm test
+npm run lint
+npm run build
+```
+
+Tests cover the API, import/retry flow and weekly comparisons using temporary
+databases and simulated external responses. They do not call Gemini.
+
+M9 delivers reliable scheduled imports; M10 adds weekly reports and comparisons.
+The next block is [M11: focused refactoring](docs/m11-refactor.md), keeping these
+behaviors covered while organizing names, folders and tests.

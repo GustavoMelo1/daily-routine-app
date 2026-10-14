@@ -1,5 +1,17 @@
 # M9 — Ponto de retomada
 
+## Fechamento — 14/10/2026
+
+M9 implementado: controle SQLite por hash integrado ao lote, publicação atômica,
+checkpoint do resultado preparado, retomada de falhas, expiração de tentativas
+abandonadas após uma hora, logs rotativos e scripts de agendamento diário às 20h.
+O histórico JSON experimental foi removido. Os registros abaixo são históricos,
+não a lista atual de pendências.
+
+Operação e recuperação: [import-operations.md](import-operations.md).
+O agendador precisa do Windows ligado e da sessão do usuário conectada.
+Testes usam bancos temporários e OCR simulado; não fazem chamadas pagas.
+
 ## Sessão de 30/09/2026
 
 Bloco de estudo: 30 minutos, conforme registro solicitado pelo usuário
