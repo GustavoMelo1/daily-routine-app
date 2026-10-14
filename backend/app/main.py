@@ -4,6 +4,7 @@ from app.api.routers.days import router as days_router
 from app.api.routers.tasks import router as tasks_router
 from app.api.routers.quarantine import router as quarantine_router
 from app.api.routers.image_imports import router as image_imports_router
+from app.api.routers.weekly_reports import router as weekly_reports_router
 
 app = FastAPI()
 
@@ -18,4 +19,5 @@ app.include_router(days_router)
 app.include_router(tasks_router)
 app.include_router(quarantine_router)
 app.include_router(image_imports_router)
+app.include_router(weekly_reports_router)
 
