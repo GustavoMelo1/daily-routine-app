@@ -73,4 +73,48 @@ def build_task_payload(item, day_id):
         "cumprida": completed
     }
     return task_payload
-        
+
+
+def build_import_payload(extracted_data):
+    from app.schemas.image_import import ImageImportPublish
+    from pipeline.validation import validate_day
+    import json
+    if not isinstance(extracted_data, dict) or not isinstance(extracted_data.get("dias"), list):
+        raise ValueError("OCR não retornou uma lista de dias")
+    payload = {"days": [], "quarantine_days": []}
+    for original in extracted_data["dias"]:
+        if not isinstance(original, dict):
+            raise ValueError("OCR retornou um dia que não é um objeto")
+        day = dict(original)
+        if isinstance(day.get("data"), str):
+            day["data"] = day["data"].replace("/", "-")
+        errors = validate_day(day)
+        if errors:
+            item = build_quarantine_day_payload(day, errors)
+            for key in ("data", "frase_do_dia", "autor_frase"):
+                value = item[key]
+                if value is not None and not isinstance(value, str):
+                    item[key] = json.dumps(value, ensure_ascii=False)
+            if type(item["minutos_estudados"]) is not int and item["minutos_estudados"] is not None:
+                item["motivo_erro"] += "; minutos originais: " + json.dumps(item["minutos_estudados"], ensure_ascii=False)
+                item["minutos_estudados"] = None
+            item["tarefas"] = []
+            for task in day.get("itens", []) if isinstance(day.get("itens"), list) else []:
+                task_payload = build_quarantine_task_payload(task, 0)
+                task_payload.pop("erro_quarentena_id")
+                description = task_payload["descricao"]
+                if description is not None and not isinstance(description, str):
+                    task_payload["descricao"] = json.dumps(description, ensure_ascii=False)
+                item["tarefas"].append(task_payload)
+            payload["quarantine_days"].append(item)
+        else:
+            day["frase_do_dia"] = day.get("frase_do_dia") or ""
+            day["autor_frase"] = day.get("autor_frase") or ""
+            item = build_day_payload(day)
+            item["tarefas"] = []
+            for task in day["itens"]:
+                task_payload = build_task_payload(task, 0)
+                task_payload.pop("dia_id")
+                item["tarefas"].append(task_payload)
+            payload["days"].append(item)
+    return ImageImportPublish.model_validate(payload).model_dump()

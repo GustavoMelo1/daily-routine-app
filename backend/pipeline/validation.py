@@ -7,14 +7,14 @@ def validate_day(day):
     else:
         try:
             datetime.strptime(day["data"], "%Y-%m-%d")
-        except ValueError:
+        except (ValueError, TypeError):
             errors.append("data_invalida")
 
     studied_minutes = day.get("minutos_estudados")
     if studied_minutes is None:
         errors.append("minutos_ausentes")
 
-    elif not isinstance(studied_minutes, int) or studied_minutes < 0 or studied_minutes > 1440:
+    elif type(studied_minutes) is not int or studied_minutes < 0 or studied_minutes > 1440:
         errors.append("minutos_invalidos")
 
     tasks = day.get("itens")

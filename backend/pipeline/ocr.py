@@ -2,19 +2,29 @@ import os
 from dotenv import load_dotenv
 from google import genai
 import json
+import logging
+from google.genai import types
 
 load_dotenv()
-chave = os.getenv("GEMINI_API_KEY")
+logger = logging.getLogger(__name__)
 
 
 def extract(path_image):
 
-    client = genai.Client()
+    with genai.Client(http_options=types.HttpOptions(timeout=90_000)) as client:
+        uploaded_file = client.files.upload(file=path_image)
+        try:
+            return extract_uploaded_file(client, uploaded_file)
+        finally:
+            try:
+                client.files.delete(name=uploaded_file.name)
+            except Exception:
+                logger.warning("Não foi possível remover o upload temporário do Gemini")
 
-    uploaded_file = client.files.upload(file=path_image)
 
+def extract_uploaded_file(client, uploaded_file):
     interaction = client.interactions.create(
-        model="gemini-3.6-flash",
+        model=os.getenv("GEMINI_OCR_MODEL", "gemini-3.6-flash"),
         input=[
             {
                 "type": "text",

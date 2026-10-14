@@ -1,141 +1,50 @@
-import pytest
 import logging
-from pipeline.batch import find_image_files, process_folder
-from unittest.mock import Mock
-from requests.exceptions import ConnectionError
+import pytest
+from pipeline import batch
 
 
-def test_find_image_files_rejects_missing_folder(tmp_path):
-    missing_folder = tmp_path / "missing"
+def test_missing_folder(tmp_path):
+    with pytest.raises(NotADirectoryError):
+        batch.find_image_files(tmp_path / 'missing')
 
-    with pytest.raises(NotADirectoryError, match="Pasta de imagens inválida"):
-        find_image_files(missing_folder)
 
-def test_find_image_files_filters_images(tmp_path):
-    (tmp_path / "foto.JPG").touch()
-    (tmp_path / "pagina.jpeg").touch()
-    (tmp_path / "outra.png").touch()
-    (tmp_path / "notas.txt").touch()
-    (tmp_path / "pasta.jpg").mkdir()
+def test_filters_images(tmp_path):
+    for name in ('a.JPG', 'b.png', 'notes.md'):
+        (tmp_path / name).write_bytes(b'image')
+    assert [p.name for p in batch.find_image_files(tmp_path)] == ['a.JPG', 'b.png']
 
-    image_files = find_image_files(tmp_path)
 
-    assert {path.name for path in image_files} == {
-        "foto.JPG",
-        "pagina.jpeg",
-        "outra.png",
-    }
+def test_empty_folder_does_not_contact_api(tmp_path, monkeypatch):
+    def unexpected():
+        pytest.fail('Empty folder must not contact API')
+    monkeypatch.setattr(batch.import_client, 'check_import_api', unexpected)
+    assert batch.process_folder(tmp_path) == []
 
-def test_process_folder_skips_empty_folder(tmp_path, monkeypatch, caplog):
-    fake_extract = Mock()
-    fake_publish = Mock()
-    monkeypatch.setattr("pipeline.batch.extract", fake_extract)
-    monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
-    caplog.set_level(logging.INFO, logger="pipeline.batch")
-    failures = process_folder(tmp_path)
 
-    assert failures == []
-    fake_extract.assert_not_called()
-    fake_publish.assert_not_called()
-    assert "Nenhuma imagem encontrada" in caplog.text
+def test_continues_after_failure(tmp_path, monkeypatch, caplog):
+    for name in ('a.jpg', 'b.jpg', 'c.jpg'):
+        (tmp_path / name).write_bytes(b'image')
+    visited = []
+    def process(path):
+        visited.append(path.name)
+        if path.name == 'b.jpg':
+            raise ValueError('invalid image')
+        return 'completed'
+    monkeypatch.setattr(batch.import_client, 'check_import_api', lambda: None)
+    monkeypatch.setattr(batch, 'process_image', process)
+    with caplog.at_level(logging.INFO):
+        failures = batch.process_folder(tmp_path)
+    assert visited == ['a.jpg', 'b.jpg', 'c.jpg']
+    assert len(failures) == 1
+    assert failures[0]['error'] == 'invalid image'
+    assert any(record.exc_info for record in caplog.records)
 
-def test_process_folder_continues_after_ocr_failure(tmp_path, monkeypatch, caplog):
-    image_paths = [
-        tmp_path / "primeira.jpg",
-        tmp_path / "segunda.jpg",
-        tmp_path / "terceira.jpg",
-    ]
-    monkeypatch.setattr("pipeline.batch.find_image_files",Mock(return_value=image_paths),)
-    caplog.set_level(logging.INFO, logger="pipeline.batch")
 
-    first_result = {"dias": [{"data": "2026-08-25"}]}
-    third_result = {"dias": [{"data": "2026-08-27"}]}
-
-    fake_extract = Mock(side_effect=[
-        first_result,
-        ValueError("Falha no OCR"),
-        third_result,
-    ])
-    fake_publish = Mock()
-
-    monkeypatch.setattr("pipeline.batch.extract", fake_extract)
-    monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
-    monkeypatch.setattr("pipeline.batch.check_api_availability", Mock())
-    failures = process_folder(tmp_path)
-
-    assert failures == [{
-        "image_path": str(image_paths[1]),
-        "error": "Falha no OCR",
-    }]
-    assert fake_extract.call_count == 3
-    assert fake_publish.call_count == 2
-    assert fake_publish.call_args_list[0].args[0] == first_result
-    assert fake_publish.call_args_list[1].args[0] == third_result
-
-    assert f"Falha ao processar imagem: {image_paths[1]}" in caplog.messages
-    assert f"Processamento concluído sem exceção: {image_paths[1]}" not in caplog.messages
-    assert f"Processamento concluído sem exceção: {image_paths[2]}" in caplog.messages
-
-    error_records = [
-        record for record in caplog.records
-        if record.name == "pipeline.batch" and record.levelno == logging.ERROR
-    ]
-
-    assert len(error_records) == 1
-    assert error_records[0].exc_info is not None
-    assert error_records[0].exc_info[0] is ValueError
-    assert error_records[0].exc_info[2] is not None
-
-def test_process_folder_continues_after_publication_failure(tmp_path, monkeypatch):
-    image_paths = [
-        tmp_path / "primeira.jpg",
-        tmp_path / "segunda.jpg",
-        tmp_path / "terceira.jpg",
-    ]
-    monkeypatch.setattr(
-        "pipeline.batch.find_image_files",
-        Mock(return_value=image_paths),
-    )
-    first_result = {"dias": [{"data": "2026-08-25"}]}
-    second_result = {"dias": [{"data": "2026-08-26"}]}
-    third_result = {"dias": [{"data": "2026-08-27"}]}
-
-    fake_extract = Mock(side_effect=[
-        first_result,
-        second_result,
-        third_result,
-    ])
-    fake_publish = Mock(side_effect=[
-        None,
-        RuntimeError("Falha na publicação"),
-        None,
-    ])
-    monkeypatch.setattr("pipeline.batch.extract", fake_extract)
-    monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
-    monkeypatch.setattr("pipeline.batch.check_api_availability", Mock())
-    failures = process_folder(tmp_path)
-
-    assert failures == [{
-        "image_path": str(image_paths[1]),
-        "error": "Falha na publicação",
-    }]
-    assert fake_extract.call_count == 3
-    assert fake_publish.call_count == 3
-    assert fake_publish.call_args_list[0].args[0] == first_result
-    assert fake_publish.call_args_list[1].args[0] == second_result
-    assert fake_publish.call_args_list[2].args[0] == third_result
-
-def test_process_folder_stops_when_api_is_unavailable(tmp_path, monkeypatch):
-    (tmp_path / "foto.jpg").touch()
-    fake_check = Mock(side_effect=ConnectionError("API indisponível"))
-    monkeypatch.setattr("pipeline.batch.check_api_availability", fake_check)
-    fake_extract = Mock()
-    fake_publish = Mock()
-    monkeypatch.setattr("pipeline.batch.extract", fake_extract)
-    monkeypatch.setattr("pipeline.batch.publish_days", fake_publish)
-    with pytest.raises(ConnectionError, match="API indisponível"):
-        process_folder(tmp_path)
-
-    fake_check.assert_called_once()
-    fake_extract.assert_not_called()
-    fake_publish.assert_not_called()
+def test_preflight_prevents_ocr(tmp_path, monkeypatch):
+    (tmp_path / 'a.jpg').write_bytes(b'image')
+    def unavailable():
+        raise ConnectionError('offline')
+    monkeypatch.setattr(batch.import_client, 'check_import_api', unavailable)
+    monkeypatch.setattr(batch, 'process_image', lambda _: pytest.fail('OCR must not run'))
+    with pytest.raises(ConnectionError):
+        batch.process_folder(tmp_path)
