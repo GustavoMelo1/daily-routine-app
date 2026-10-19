@@ -1,4 +1,5 @@
 import difflib
+from pipeline.dates import normalize_notebook_date
 from pipeline.vocabulary import repetitive_tasks
 
 def build_quarantine_day_payload(day, validation_errors):
@@ -86,8 +87,7 @@ def build_import_payload(extracted_data):
         if not isinstance(original, dict):
             raise ValueError("OCR retornou um dia que não é um objeto")
         day = dict(original)
-        if isinstance(day.get("data"), str):
-            day["data"] = day["data"].replace("/", "-")
+        day["data"] = normalize_notebook_date(day.get("data"))
         errors = validate_day(day)
         if errors:
             item = build_quarantine_day_payload(day, errors)

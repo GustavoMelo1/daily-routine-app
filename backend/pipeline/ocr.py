@@ -34,6 +34,12 @@ def extract_uploaded_file(client, uploaded_file):
                 Transcrever a página de caderno da imagem. É uma agenda diária: cada bloco começa com o dia da semana + data (às vezes com o tempo estudado ao lado, tipo "ESTUDEI HOJE 1:20"), seguido de itens com caixinhas de checkbox, e no fim da página costuma ter uma seção "FRASE DO DIA" com uma citação e o nome de quem a disse/escreveu.
 
                 REGRAS
+                0. A página pode conter vários dias passados, inclusive uma semana inteira.
+                Gere um objeto em dias para CADA bloco datado, com suas próprias tarefas e minutos.
+                Use a data escrita no caderno, nunca a data de envio ou a data atual.
+                Datas DD/MM/AAAA devem virar AAAA-MM-DD. Não invente o ano:
+                use somente o ano visível na página; se não for possível determinar a data completa,
+                use data null para revisão. Não transfira tarefas de um dia para outro.
                 1. Transcreva EXATAMENTE o que está escrito, sem corrigir ortografia, sem completar abreviações e sem reescrever em linguagem formal.
                 2. Preserve maiúsculas/minúsculas como aparecem.
                 3. Cada item tem uma caixinha à esquerda com TRÊS estados possíveis:

@@ -92,3 +92,18 @@ def test_existing_day_is_not_overwritten(import_environment, client):
     saved = client.get('/dias/2026-08-25').json()
     assert saved['minutos_estudados'] == 15
     assert saved['tarefas'] == []
+
+
+def test_photo_with_past_week_keeps_each_days_date(import_environment, client, monkeypatch):
+    image, _ = import_environment
+    days = [{'data': f'{day:02d}/10/2020', 'minutos_estudados': day,
+             'itens': [{'texto': f'Exercício específico {day}', 'status': 'feito'}]}
+            for day in range(12, 19)]
+    monkeypatch.setattr(batch, 'extract', lambda _: {'dias': days})
+    assert batch.process_image(image) == 'completed'
+    for day in range(12, 19):
+        saved = client.get(f'/dias/2020-10-{day}').json()
+        assert saved['data'] == f'2020-10-{day}'
+        assert saved['minutos_estudados'] == day
+        assert saved['tarefas'][0]['descricao'] == f'Exercício específico {day}'
+    assert batch.process_image(image) == 'already_completed'
