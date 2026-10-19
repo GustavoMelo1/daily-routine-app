@@ -5,8 +5,10 @@ from app.api.routers.tasks import router as tasks_router
 from app.api.routers.quarantine import router as quarantine_router
 from app.api.routers.image_imports import router as image_imports_router
 from app.api.routers.weekly_reports import router as weekly_reports_router
+from app.api.routers.learning import router as learning_router
 
 app = FastAPI()
+app.include_router(learning_router)
 
 app.add_middleware(
     CORSMiddleware,
