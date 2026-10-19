@@ -4,6 +4,7 @@ import { getApiErrorMessage, getDay, getDaysByMonth } from "./api/client"
 import AppShell from "./components/AppShell"
 import CalendarToolbar from "./components/CalendarToolbar"
 import Dashboard from "./components/Dashboard"
+import LearningTree from './components/learning/LearningTree'
 import WeeklyEvolution from "./components/evolution/WeeklyEvolution"
 import DayPanel from "./components/DayPanel"
 import MonthView from "./components/MonthView"
@@ -134,7 +135,9 @@ function App() {
       theme={theme}
       onThemeToggle={toggleTheme}
     >
-      {activeSection === "evolution" ? (
+      {activeSection === "learning" ? (
+        <LearningTree onNavigationGuardChange={registerNavigationGuard} />
+      ) : activeSection === "evolution" ? (
         <WeeklyEvolution onNavigationGuardChange={registerNavigationGuard} />
       ) : activeSection === "dashboard" ? (
         <Dashboard onOpenDay={handleOpenDay} />

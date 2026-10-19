@@ -9,7 +9,7 @@ const views = [
 export default function CalendarToolbar({ title, view, onViewChange, onPrevious, onNext, onToday }) {
   return (
     <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={onPrevious}
@@ -33,7 +33,7 @@ export default function CalendarToolbar({ title, view, onViewChange, onPrevious,
         >
           Hoje
         </button>
-        <h1 className="ml-2 truncate text-xl font-semibold capitalize tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-2xl">
+        <h1 className="order-first w-full text-xl font-semibold capitalize tracking-tight text-zinc-950 dark:text-zinc-100 sm:order-none sm:ml-2 sm:w-auto sm:text-2xl">
           {title}
         </h1>
       </div>

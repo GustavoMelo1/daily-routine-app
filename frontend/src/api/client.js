@@ -2,6 +2,11 @@ const API_BASE_URL = (
   import.meta.env.VITE_API_URL || "http://localhost:8000"
 ).replace(/\/$/, "")
 
+export const listLearningNodes = (signal) => request('/learning-nodes', { signal })
+export const createLearningNode = (body) => request('/learning-nodes', { method: 'POST', body })
+export const updateLearningNode = (id, body) => request(`/learning-nodes/${id}`, { method: 'PUT', body })
+export const deleteLearningNode = (id) => request(`/learning-nodes/${id}`, { method: 'DELETE' })
+
 export class ApiError extends Error {
   constructor(message, status, payload) {
     super(message)
