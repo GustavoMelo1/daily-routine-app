@@ -20,7 +20,7 @@ def client(tmp_path):
     conexao_inicial.close()
 
     def conexao_teste():
-        con = sqlite3.connect(caminho_banco)
+        con = sqlite3.connect(caminho_banco, check_same_thread=False)
         con.execute("PRAGMA foreign_keys = ON")
         try:
             yield con
