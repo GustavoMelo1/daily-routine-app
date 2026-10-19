@@ -161,6 +161,25 @@ consume your quota. Saved comparisons are reused until a source report changes.
 The app does not scan repositories: you prepare those reports outside it.
 [Workflow, API and comparison limits](docs/weekly-evolution.md).
 
+## Learning tree
+
+Open **Aprendizado** and create an area such as Data Engineering. Use **+** on
+any item to add topics and nested checklists (up to 32 levels). Rename, collapse,
+mark/unmark or delete branches. Checkboxes are independent; completing a parent
+does not mark its children. Deletion requires confirmation and removes descendants.
+Everything is stored in SQLite, separately from daily tasks and study streaks.
+Run `python db/migrate.py` from `backend` before using this feature on an existing database.
+
+### Photos of past days
+
+A photo may contain several dated days, including an entire past week. Each day
+is saved under the date written in the notebook, not the upload date. Complete
+Brazilian dates (`DD/MM/YYYY`) and ISO dates are accepted. Missing years or invalid
+dates go to quarantine instead of assuming today's date. OCR still needs legible
+dates; this behavior is covered with simulated OCR, not a guarantee of transcription.
+Existing dates remain protected against overwriting. Photos still enter through
+`backend/images/`, not the browser.
+
 ## Quarantine
 
 Invalid dates, study minutes or tasks are stored with the reason for rejection
