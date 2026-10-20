@@ -2,88 +2,41 @@
 
 [![Backend tests](https://github.com/GustavoMelo1/daily-routine-app/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/GustavoMelo1/daily-routine-app/actions/workflows/backend-tests.yml)
 
-I created this project to turn my handwritten notebook entries into a digital
-agenda. I wanted to follow my tasks and study time over the weeks while keeping
-the habit of writing on paper.
+I plan my days and keep track of my studies in a notebook. I started this project
+because I wanted to bring those notes into a calendar without giving up writing
+on paper.
 
-A photo starts the import: Gemini reads the page, the pipeline validates the
-result, and the API saves days and tasks or sends incomplete records to quarantine.
-The calendar shows month, week and day views, alongside monthly study metrics.
+There was another reason too: after a week of studying, it can feel like I haven't
+done much. Keeping my weekly reports in one place and comparing them helps me
+look back at what I actually worked on.
 
-The **Evolução** area also keeps the weekly Markdown reports I prepare outside
-the app. Comparing two reports helps me see what changed, with excerpts from
-both weeks instead of a productivity score.
+The app has grown around those two habits. It now includes daily planning, photo
+imports, weekly comparisons and a learning tree for the subjects I want to study.
+It's also a project I'm using to learn and improve as I build it.
+
+## What I can do with it
+
+- **Plan tomorrow:** write one task per line, save the day and check things off
+  as I finish them. Study minutes can be filled in afterward.
+- **Browse my routine:** month, week and day views, plus a monthly panel with
+  study time, completed tasks and my longest sequence of study days.
+- **Import notebook pages:** Gemini reads the photos and the app saves each
+  entry under the date written on the page, including past days.
+- **Compare weeks:** import the Markdown reports I prepare outside the app and
+  ask Gemini to compare two of them, with excerpts from both texts.
+- **Organize what to learn:** build a tree such as Data Engineering → Python →
+  Functions, mark topics and keep Markdown notes, examples and links beside them.
+
+The interface is in Portuguese and has light and dark themes. Planning, tasks
+and learning notes work without Gemini; only OCR and report comparisons use it.
 
 ## Stack
 
-- Backend: Python, FastAPI, Pydantic and SQLite.
-- Pipeline and weekly comparisons: Google Gemini (`google-genai`).
-- Frontend: React, Vite and Tailwind, with light/dark themes.
-- Tests: pytest and Vitest; GitHub Actions runs backend and frontend checks.
+Python, FastAPI and SQLite on the backend. React, Vite and Tailwind on the
+frontend. Gemini handles OCR and weekly comparisons. Tests use pytest and Vitest,
+with checks running through GitHub Actions.
 
-## Structure
-
-```text
-daily-routine-app/
-├── .github/workflows/
-│   ├── backend-tests.yml
-│   └── frontend-tests.yml
-├── backend/
-│   ├── app/
-│   │   ├── api/routers/
-│   │   │   ├── days.py
-│   │   │   ├── tasks.py
-│   │   │   ├── quarantine.py
-│   │   │   ├── image_imports.py
-│   │   │   └── weekly_reports.py
-│   │   ├── core/
-│   │   ├── database/
-│   │   ├── repositories/
-│   │   ├── schemas/
-│   │   ├── services/
-│   │   └── main.py
-│   ├── db/
-│   │   ├── migrations/
-│   │   ├── init_db.py
-│   │   ├── migrate.py
-│   │   └── schema.sql
-│   ├── pipeline/
-│   │   ├── batch.py
-│   │   ├── import_client.py
-│   │   ├── ocr.py
-│   │   ├── payloads.py
-│   │   ├── publisher.py
-│   │   ├── tracking.py
-│   │   ├── validation.py
-│   │   └── vocabulary.py
-│   ├── scripts/
-│   │   ├── install_schedule.ps1
-│   │   └── run_batch.ps1
-│   ├── tests/
-│   ├── .env.example
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── components/
-│   │   │   └── evolution/
-│   │   ├── hooks/
-│   │   ├── utils/
-│   │   └── App.jsx
-│   └── package.json
-├── docs/
-│   ├── import-operations.md
-│   ├── weekly-evolution.md
-│   └── m11-refactor.md
-├── pytest.ini
-└── README.md
-```
-
-Routes handle HTTP, schemas validate requests, repositories contain SQL, and
-services coordinate transactions and comparisons. The pipeline talks to the API;
-it does not open the application database directly.
-
-## Run locally
+## Running locally
 
 ### Backend
 
@@ -94,7 +47,7 @@ cd backend
 python -m pip install -r requirements.txt
 ```
 
-Copy `.env.example` to `.env` and configure:
+Copy `.env.example` to `.env` and fill in your settings:
 
 ```env
 DB_URL=db/rotina.db
@@ -104,20 +57,22 @@ GEMINI_COMPARISON_MODEL=gemini-3.6-flash
 API_BASE_URL=http://localhost:8000
 ```
 
-Then initialize or migrate the database and start the API:
+Use models available to your Gemini account. Keep the key in the backend `.env`.
+
+Before starting the API, create or update the database:
 
 ```powershell
 python db/migrate.py
 python -m uvicorn app.main:app --reload
 ```
 
-The migrator backs up existing databases before changing their structure.
-Stop active writers before migrating. API docs: `http://localhost:8000/docs`.
-Choose models available to your Gemini account; the API key stays in the backend.
+The migration command backs up an existing database before changing it. Stop the
+API and any running import before migrating. API docs are at
+`http://localhost:8000/docs`.
 
 ### Frontend
 
-In a separate terminal, from the repository root:
+Open another terminal at the repository root:
 
 ```powershell
 cd frontend
@@ -125,67 +80,111 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173`. Keep the API at `http://localhost:8000`.
-This is a local, single-user app without authentication; do not expose the API
-directly to the internet.
+Open **http://localhost:5173** and leave both terminals running.
+This app is meant for personal use on my computer. It has no login, so don't
+expose the API to the internet.
 
-### Images and daily import
+## Using it
 
-Put `.jpg`, `.jpeg` or `.png` files directly in `backend/images/`, then run from
-`backend`:
+### Planning a day
+
+Click **Planejar amanhã**, or choose a date in the calendar. Add one task per
+line and click **Salvar dia e tarefas**. Everything starts unchecked, with zero
+study minutes. During the day, check off tasks and use **Salvar minutos** to
+record the time you actually studied. The quote and other details are optional.
+
+### Importing the notebook
+
+Create `backend/images/` and put your `.jpg`, `.jpeg` or `.png` photos directly
+inside it. From `backend`, run:
 
 ```powershell
 python -m pipeline.batch
 ```
 
-Completed images are skipped by content hash. A publication failure rolls back
-that image's records; a saved OCR payload is reused on retry. Existing dates are
-not silently overwritten. Logs are written to `backend/logs/batch.log`.
+For example, a page with entries dated `12/10/2026` and `13/10/2026` produces
+records for those two dates, even if I send the photo a week later. Write the
+complete dates clearly, including the year.
 
-To install the Windows task for **every day at 20:00**, from `backend`:
+The batch skips photos it has already finished. If a record has an invalid date,
+study time or task, it goes to quarantine with the reason. Logs are saved in
+`backend/logs/batch.log`.
+
+On Windows, I can schedule the import for every day at 20:00:
 
 ```powershell
 .\scripts\install_schedule.ps1 -PythonPath (Get-Command python).Source -Time '20:00'
 ```
 
-The task requires the computer on and the user signed in. It starts a temporary
-local API if needed. [Recovery, backups and scheduling details](docs/import-operations.md).
+Run that from `backend`. The computer must be on and the user signed in. The task
+starts a temporary local API if needed. More on [scheduling and recovery](docs/import-operations.md).
 
-### Weekly evolution
+### Looking back at the week
 
-Open **Evolução**, import a UTF-8 `.md`, check its date/title and save. Importing
-does not call AI. With two reports available, select an earlier week and choose
-**Gerar comparação com IA**. This explicitly sends both texts to Gemini and may
-consume your quota. Saved comparisons are reused until a source report changes.
+In **Evolução**, import a UTF-8 `.md` report and check its date before saving.
+With two reports available, choose an earlier week and click
+**Gerar comparação com IA**. That sends both texts to Gemini and may consume your
+quota. The comparison is saved so you can read it again without generating it again.
 
-The app does not scan repositories: you prepare those reports outside it.
-[Workflow, API and comparison limits](docs/weekly-evolution.md).
+The reports are prepared outside the app; it doesn't scan GitHub repositories.
+See [weekly evolution](docs/weekly-evolution.md) for the full workflow.
 
-## Learning tree
+### Building a learning tree
 
-Open **Aprendizado** and create an area such as Data Engineering. Use **+** on
-any item to add topics and nested checklists (up to 32 levels). Rename, collapse,
-mark/unmark or delete branches. Checkboxes are independent; completing a parent
-does not mark its children. Deletion requires confirmation and removes descendants.
-Everything is stored in SQLite, separately from daily tasks and study streaks.
-Run `python db/migrate.py` from `backend` before using this feature on an existing database.
+In **Aprendizado**, create an area and use **+** to add topics and subtopics.
+Each checkbox is independent: marking Python doesn't mark everything inside it.
 
-### Photos of past days
+Open **Nota** on a topic to write Markdown, preview it or download a `.md` copy.
+Search works across topic titles and saved notes. Save before switching topics;
+there's no autosave. These notes stay local and aren't sent to Gemini.
 
-A photo may contain several dated days, including an entire past week. Each day
-is saved under the date written in the notebook, not the upload date. Complete
-Brazilian dates (`DD/MM/YYYY`) and ISO dates are accepted. Missing years or invalid
-dates go to quarantine instead of assuming today's date. OCR still needs legible
-dates; this behavior is covered with simulated OCR, not a guarantee of transcription.
-Existing dates remain protected against overwriting. Photos still enter through
-`backend/images/`, not the browser.
+## How the code is organized
 
-## Quarantine
+Routes handle HTTP, schemas validate inputs, repositories hold the SQL, and
+services handle operations that need several steps. The image pipeline uses the
+API rather than opening the database itself.
 
-Invalid dates, study minutes or tasks are stored with the reason for rejection
-and status `pendente`. They are not published as normal days. Reviewing,
-correcting and republishing quarantine still needs a dedicated workflow; there
-is no quarantine review screen yet.
+Main folders and entry points:
+
+```text
+daily-routine-app/
+├── .github/workflows/
+├── backend/
+│   ├── app/
+│   │   ├── api/routers/
+│   │   ├── core/
+│   │   ├── database/
+│   │   ├── repositories/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   └── main.py
+│   ├── db/
+│   │   ├── migrations/
+│   │   ├── migrate.py
+│   │   └── schema.sql
+│   ├── pipeline/
+│   │   ├── batch.py
+│   │   ├── ocr.py
+│   │   ├── payloads.py
+│   │   └── validation.py
+│   ├── scripts/
+│   ├── tests/
+│   ├── .env.example
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   │   ├── evolution/
+│   │   │   └── learning/
+│   │   ├── hooks/
+│   │   ├── utils/
+│   │   └── App.jsx
+│   └── package.json
+├── docs/
+├── pytest.ini
+└── README.md
+```
 
 ## Tests
 
@@ -199,9 +198,21 @@ npm run lint
 npm run build
 ```
 
-Tests cover the API, import/retry flow and weekly comparisons using temporary
-databases and simulated external responses. They do not call Gemini.
+Tests use temporary databases and simulated external responses. They don't call Gemini.
 
-M9 delivers reliable scheduled imports; M10 adds weekly reports and comparisons.
-The next block is [M11: focused refactoring](docs/m11-refactor.md), keeping these
-behaviors covered while organizing names, folders and tests.
+## Still to work on
+
+The main workflows are there, but a few things still need attention:
+
+- Quarantine has storage and error reasons, but no screen to correct and republish entries.
+- A photo for a date already in the calendar isn't merged with that day. The import stops on the conflict.
+- Study minutes are editable; quotes, author and day type don't have an edit form yet.
+- There's no trash or undo. Deleting a day removes its tasks through separate requests, so an interrupted deletion can be partial.
+- Learning notes don't have a version history, topic connections or a graph view yet.
+
+Backups are created before migrations, not after every edit. Keep regular copies
+of the database with the API and batch stopped. I've recorded the other practical
+limits in [the local-use review](docs/local-use-review.md).
+
+Next is [M11](docs/m11-refactor.md): organize the code and tests while using the
+app enough to find out what actually needs improving.
