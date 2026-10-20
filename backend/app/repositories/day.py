@@ -1,6 +1,10 @@
 import sqlite3
 
 
+def update_studied_minutes(connection, date, minutes):
+    return connection.execute('UPDATE dias SET minutos_estudados=? WHERE data=?', (minutes, date)).rowcount
+
+
 def find_days_by_month(
     connection: sqlite3.Connection,
     year: int,

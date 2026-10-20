@@ -5,8 +5,30 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.database.connection import get_database_connection
 from app.repositories.day import delete_day_by_date, find_day_by_date, find_days_by_month, insert_day
 from app.schemas.day import DayCreate
+from app.schemas.day import DayPlan, DayMinutesUpdate
+from app.services.day_plan import create_day_plan
+from app.repositories.day import update_studied_minutes
 
 router = APIRouter(prefix="/dias", tags=["days"])
+
+
+@router.post('/planejamento', status_code=201)
+def plan_day(payload: DayPlan, connection=Depends(get_database_connection)):
+    try:
+        day_id = create_day_plan(connection, payload)
+    except sqlite3.IntegrityError as error:
+        if getattr(error, 'sqlite_errorcode', None) == sqlite3.SQLITE_CONSTRAINT_UNIQUE:
+            raise HTTPException(409, 'Esta data já possui um registro. Abra o dia para adicionar tarefas.') from error
+        raise HTTPException(409, 'Não foi possível salvar o planejamento. Nenhum dia ou tarefa foi criado.') from error
+    return {'dia': day_id, 'Status': 'Planejamento salvo'}
+
+
+@router.patch('/{data}/minutos')
+def update_minutes(data: str, payload: DayMinutesUpdate, connection=Depends(get_database_connection)):
+    with connection:
+        if not update_studied_minutes(connection, data, payload.minutos_estudados):
+            raise HTTPException(404, 'Dia não encontrado')
+    return {'minutos_estudados': payload.minutos_estudados}
 
 @router.get("")
 def list_days_by_month(ano: int, mes: int, connection=Depends(get_database_connection)):
