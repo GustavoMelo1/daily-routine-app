@@ -1,0 +1,2 @@
+ALTER TABLE learning_nodes ADD COLUMN notes TEXT NOT NULL DEFAULT '';
+ALTER TABLE learning_nodes ADD COLUMN notes_version INTEGER NOT NULL DEFAULT 1;

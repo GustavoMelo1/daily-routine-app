@@ -1,6 +1,12 @@
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
+class LearningNotesUpdate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    notes: str = Field(max_length=100_000)
+    version: int = Field(ge=1)
+
+
 class LearningCreate(BaseModel):
     model_config = ConfigDict(extra='forbid')
     title: str = Field(min_length=1, max_length=160)

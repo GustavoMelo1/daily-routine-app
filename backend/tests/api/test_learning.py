@@ -49,3 +49,23 @@ def test_depth_limit(client):
     for _ in range(32):
         parent = create(client, 'Tópico', parent)['id']
     assert client.post('/learning-nodes', json={'title': 'Mais um', 'parent_id': parent}).status_code == 422
+
+
+def test_notes_persist_and_reject_stale_version(client):
+    node = create(client, 'Python')
+    path = f"/learning-nodes/{node['id']}/notes"
+    text = '## Funções\n\n[Docs](https://docs.python.org)'
+    assert client.put(path, json={'notes': text, 'version': 1}).json()['notes_version'] == 2
+    assert client.put(path, json={'notes': 'Texto antigo', 'version': 1}).status_code == 409
+    saved = client.get('/learning-nodes').json()[0]
+    assert saved['notes'] == text
+    client.put(f"/learning-nodes/{node['id']}", json={'title': 'Python 3', 'completed': True})
+    assert client.get('/learning-nodes').json()[0]['notes'] == text
+    assert client.put(path, json={'notes': '', 'version': 2}).status_code == 200
+    assert client.get('/learning-nodes').json()[0]['notes'] == ''
+
+
+def test_notes_validation_and_missing_topic(client):
+    node = create(client, 'SQL')
+    assert client.put(f"/learning-nodes/{node['id']}/notes", json={'notes': 'a' * 100001, 'version': 1}).status_code == 422
+    assert client.put('/learning-nodes/999/notes', json={'notes': '', 'version': 1}).status_code == 404
