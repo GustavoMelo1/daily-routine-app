@@ -11,7 +11,7 @@ function TreeNode({ node, childrenByParent, busy, onToggle, onEdit, onAdd, onDel
   const [expanded, setExpanded] = useState(true)
   const children = childrenByParent.get(node.id) || []
   return <li>
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className={`flex flex-wrap items-center gap-2 rounded-md px-2 py-2 ${selectedId === node.id ? 'bg-blue-50 dark:bg-blue-950/40' : 'hover:bg-zinc-100 dark:hover:bg-zinc-900'}`}>
       <button type="button" disabled={!children.length} onClick={() => setExpanded(!expanded)} aria-label={`${expanded ? 'Recolher' : 'Expandir'} ${node.title}`} aria-expanded={children.length ? expanded : undefined} className="rounded p-1 disabled:opacity-0">
         {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
       </button>
@@ -19,7 +19,7 @@ function TreeNode({ node, childrenByParent, busy, onToggle, onEdit, onAdd, onDel
         <input type="checkbox" checked={node.completed} disabled={busy} onChange={() => onToggle(node)} className="size-4 shrink-0 accent-blue-600" />
         <span className={`break-words text-sm font-medium ${node.completed ? 'text-zinc-500 line-through dark:text-zinc-400' : ''}`}>{node.title}</span>
       </label>
-      <div className="flex gap-1">
+      <div className="flex gap-1 [&_button]:border-transparent [&_button]:px-2 [&_button]:text-zinc-500 dark:[&_button]:text-zinc-400">
         <button className={`${button} ${selectedId === node.id ? 'text-blue-600 dark:text-blue-400' : ''}`} disabled={busy} onClick={() => onSelect(node)} aria-label={`Abrir nota de ${node.title}`} aria-pressed={selectedId === node.id}>Nota</button>
         <button className={button} disabled={busy} onClick={() => onAdd(node)} aria-label={`Adicionar subtópico em ${node.title}`}><Plus size={15} /></button>
         <button className={button} disabled={busy} onClick={() => onEdit(node)} aria-label={`Renomear ${node.title}`}><Pencil size={15} /></button>
@@ -120,7 +120,7 @@ export default function LearningTree({ onNavigationGuardChange }) {
   const completed = nodes.filter((node) => node.completed).length
   return <section>
     <header className="flex flex-wrap items-start justify-between gap-4">
-      <div><p className="text-sm font-medium text-blue-600 dark:text-blue-400">Seu caminho de estudo</p><h1 className="mt-1 text-2xl font-semibold">Árvore de aprendizado</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500 dark:text-zinc-400">Organize áreas, assuntos e subtópicos. Cada checkbox é independente: marcar Python não marca automaticamente tudo dentro dele.</p></div>
+      <div><h1 className="text-2xl font-semibold tracking-tight">Árvore de aprendizado</h1><p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Assuntos para estudar, com suas notas em cada tópico.</p></div>
       <button disabled={busy || loading || Boolean(form)} onClick={() => openForm({})} className={`${button} text-blue-600 dark:text-blue-400`}>Nova área</button>
     </header>
     {error && <div className="mt-4"><StatusMessage title="Não foi possível concluir a operação" description={error} onRetry={() => { setError(''); setRevision((v) => v + 1) }} /></div>}
@@ -141,7 +141,7 @@ export default function LearningTree({ onNavigationGuardChange }) {
             {!nodes.some((node) => `${node.title} ${node.notes || ''}`.toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))) && <li className="p-4 text-sm text-zinc-500">Nenhum tópico ou nota encontrado.</li>}
           </ul> : <ul className="space-y-3">{(childrenByParent.get(null) || []).map((node) => <TreeNode key={node.id} node={node} childrenByParent={childrenByParent} busy={busy || noteBusy || Boolean(form)} onToggle={toggle} onEdit={(item) => openForm({ node: item })} onAdd={(parent) => openForm({ parent })} onSelect={selectNote} selectedId={selectedId} onDelete={(item) => { if (!noteDirty || window.confirm('A exclusão pode remover a nota em edição. Continuar?')) setDeleting(item) }} />)}</ul>}
         </div>
-        {selected ? <LearningNote key={selected.id} node={selected} onDirtyChange={setNoteDirty} onBusyChange={setNoteBusy} onSaved={(id, result) => setNodes((all) => all.map((node) => node.id === id ? { ...node, ...result } : node))} /> : <div className="rounded-xl border border-dashed border-zinc-300 p-8 text-sm leading-7 text-zinc-500 dark:border-zinc-700"><h2 className="font-semibold text-zinc-800 dark:text-zinc-200">Um roteiro e um lugar para pensar</h2><p>Abra a nota de um tópico para registrar conceitos, exemplos e links. A árvore mostra para onde ir; as notas guardam o que você aprendeu.</p></div>}
+        {selected ? <LearningNote key={selected.id} node={selected} onDirtyChange={setNoteDirty} onBusyChange={setNoteBusy} onSaved={(id, result) => setNodes((all) => all.map((node) => node.id === id ? { ...node, ...result } : node))} /> : <div className="border-l border-zinc-200 px-6 py-4 text-sm leading-6 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400"><h2 className="font-medium text-zinc-800 dark:text-zinc-200">Notas do tópico</h2><p className="mt-2">Selecione “Nota” em um tópico para escrever ou consultar suas anotações.</p></div>}
       </div>
     </>}
     <ConfirmDialog open={Boolean(deleting)} title={`Excluir ${deleting?.title || 'tópico'}?`} description={`Serão excluídos este item e seus subtópicos (${descendants.size} itens no total). Não é possível desfazer.`} confirmLabel="Excluir árvore" busy={busy} onConfirm={remove} onCancel={() => setDeleting(null)} />

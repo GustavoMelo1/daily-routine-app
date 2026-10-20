@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock3, Plus, Quote, Tag, Trash2 } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import {
@@ -121,7 +121,6 @@ export default function DayPanel({ date, day, loading, error, onRetry, onChanged
       <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">Dia registrado</p>
             <h2 className="mt-1 text-lg font-semibold capitalize text-zinc-950 dark:text-zinc-100">
               {formatLongDate(day.data)}
             </h2>
@@ -139,49 +138,18 @@ export default function DayPanel({ date, day, loading, error, onRetry, onChanged
 
       <div className="space-y-5 p-5">
         <StudyMinutes key={`${day.id}-${day.minutos_estudados}`} day={day} onChanged={onChanged} />
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
-            <div className="flex items-center gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              <Clock3 size={15} />
-              Estudo
-            </div>
-            <p className="mt-2 text-xl font-semibold text-zinc-950 dark:text-zinc-100">{day.minutos_estudados} min</p>
-          </div>
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
-            <div className="flex items-center gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              <CheckCircle2 size={15} />
-              Tarefas
-            </div>
-            <p className="mt-2 text-xl font-semibold text-zinc-950 dark:text-zinc-100">
-              {completedTasks}/{day.tarefas.length}
-            </p>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            <Quote size={15} />
-            Frase do dia
-          </div>
-          <blockquote className="mt-3 text-sm leading-6 text-zinc-800 dark:text-zinc-200">
-            {day.frase_do_dia ? `“${day.frase_do_dia}”` : "Nenhuma frase informada."}
-          </blockquote>
-          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-            {day.autor_frase ? `— ${day.autor_frase}` : "Autor não informado"}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-          <Tag size={15} />
-          <span className="rounded-md bg-zinc-100 px-2 py-1 font-medium dark:bg-zinc-800">{day.tipo || "Sem tipo"}</span>
-        </div>
+        {day.frase_do_dia && <figure className="border-l-2 border-zinc-300 pl-4 dark:border-zinc-700">
+          <blockquote className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">{day.frase_do_dia}</blockquote>
+          {day.autor_frase && <figcaption className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">{day.autor_frase}</figcaption>}
+        </figure>}
+        {day.tipo && day.tipo !== 'normal' && <p className="text-xs text-zinc-500 dark:text-zinc-400">Tipo: {day.tipo}</p>}
 
         <section aria-labelledby="tasks-title">
           <div className="flex items-center justify-between">
             <h3 id="tasks-title" className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">
               Tarefas do dia
             </h3>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">{completedTasks} concluídas</span>
+            <span className="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">{completedTasks}/{day.tarefas.length} concluídas</span>
           </div>
 
           <div className="mt-3 space-y-2">
@@ -194,7 +162,7 @@ export default function DayPanel({ date, day, loading, error, onRetry, onChanged
               const completed = Number(task.cumprida) === 1
               const taskBusy = busyAction === `task-${task.id}`
               return (
-                <div key={task.id} className="flex items-center gap-3 rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
+                <div key={task.id} className="flex items-center gap-3 border-b border-zinc-100 py-2.5 dark:border-zinc-800">
                   <input
                     type="checkbox"
                     checked={completed}
@@ -226,6 +194,7 @@ export default function DayPanel({ date, day, loading, error, onRetry, onChanged
               value={taskDescription}
               onChange={(event) => setTaskDescription(event.target.value)}
               placeholder="Nova tarefa"
+              aria-label="Nova tarefa"
               disabled={busyAction === "create-task"}
               className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-600 dark:focus:ring-blue-950"
             />
@@ -242,9 +211,6 @@ export default function DayPanel({ date, day, loading, error, onRetry, onChanged
 
         {actionError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{actionError}</p>}
 
-        <p className="border-t border-zinc-200 pt-4 text-xs leading-5 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-          Você pode atualizar os minutos e marcar tarefas durante o dia. Frase, autor e tipo ainda não têm edição nesta tela.
-        </p>
       </div>
 
       <ConfirmDialog

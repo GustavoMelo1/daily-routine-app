@@ -6,7 +6,7 @@ const views = [
   { id: "day", label: "Dia" },
 ]
 
-export default function CalendarToolbar({ title, view, onViewChange, onPrevious, onNext, onToday, onTomorrow }) {
+export default function CalendarToolbar({ title, view, onViewChange, onPrevious, onNext, onToday }) {
   return (
     <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -33,7 +33,6 @@ export default function CalendarToolbar({ title, view, onViewChange, onPrevious,
         >
           Hoje
         </button>
-        <button type="button" onClick={onTomorrow} className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Planejar amanhã</button>
         <h1 className="order-first w-full text-xl font-semibold capitalize tracking-tight text-zinc-950 dark:text-zinc-100 sm:order-none sm:ml-2 sm:w-auto sm:text-2xl">
           {title}
         </h1>

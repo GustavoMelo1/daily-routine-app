@@ -26,10 +26,9 @@ export default function LearningNote({ node, onSaved, onDirtyChange, onBusyChang
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
   return <section aria-label={`Nota de ${node.title}`} className="min-w-0 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-    <p className="text-xs font-medium uppercase tracking-wide text-blue-600 dark:text-blue-400">Sua base de conhecimento</p>
-    <h2 className="mt-2 break-words text-xl font-semibold">{node.title}</h2>
-    <p className="mt-2 text-sm leading-6 text-zinc-500">Escreva o que aprendeu, exemplos e referências. Esta nota é local: não é enviada à IA.</p>
-    <div className="my-4 flex flex-wrap gap-2">
+    <h2 className="break-words text-xl font-semibold">{node.title}</h2>
+    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Nota local · não enviada à IA</p>
+    <div className="my-4 flex flex-wrap gap-2 [&_button[aria-pressed=true]]:bg-zinc-100 dark:[&_button[aria-pressed=true]]:bg-zinc-800">
       <button type="button" onClick={() => setPreview(false)} aria-pressed={!preview} className="rounded-lg border px-3 py-2 text-sm dark:border-zinc-700">Editar Markdown</button>
       <button type="button" onClick={() => setPreview(true)} aria-pressed={preview} className="rounded-lg border px-3 py-2 text-sm dark:border-zinc-700">Ler nota</button>
       <button type="button" onClick={download} className="rounded-lg border px-3 py-2 text-sm dark:border-zinc-700">Baixar .md</button>

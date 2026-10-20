@@ -25,7 +25,7 @@ describe('weekly evolution', () => {
     render(<WeeklyEvolution onNavigationGuardChange={() => {}} />)
     await screen.findByRole('button', { name: 'Gerar comparação com IA' })
     expect(api.compareWeeklyReports).not.toHaveBeenCalled()
-    expect(screen.getByText(/dois textos serão enviados/)).toBeTruthy()
+    expect(screen.getByText(/dois textos serão enviados/i)).toBeTruthy()
     api.compareWeeklyReports.mockResolvedValue({ model: 'test', created_at: '2026-10-14', result: {
       summary: 'Praticou JOIN', advances: [], consolidations: [], pending: [], limitations: 'Só relatos.',
     } })
@@ -49,6 +49,24 @@ describe('weekly evolution', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Gerar comparação com IA' }))
     expect(await screen.findByRole('alert')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Gerar comparação com IA' }).disabled).toBe(false)
+    expect(screen.queryByRole('button', { name: 'Recarregar dados' })).toBeNull()
+  })
+  it('retries a failed report load instead of leaving a loading message', async () => {
+    api.getWeeklyReport.mockRejectedValueOnce(new Error('Sem conexão'))
+    render(<WeeklyEvolution onNavigationGuardChange={() => {}} />)
+    await screen.findByRole('alert')
+    expect(screen.queryByText('Carregando relato…')).toBeNull()
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    expect(await screen.findByRole('button', { name: 'Editar' })).toBeTruthy()
+  })
+  it('does not offer generation when the saved comparison could not be loaded', async () => {
+    api.getWeeklyComparison.mockRejectedValueOnce(new Error('Sem conexão'))
+    render(<WeeklyEvolution onNavigationGuardChange={() => {}} />)
+    await screen.findByRole('alert')
+    expect(screen.queryByRole('button', { name: 'Gerar comparação com IA' })).toBeNull()
+    await userEvent.click(screen.getByRole('button', { name: 'Buscar novamente' }))
+    expect(await screen.findByRole('button', { name: 'Gerar comparação com IA' })).toBeTruthy()
+    expect(api.compareWeeklyReports).not.toHaveBeenCalled()
   })
   it('does not render raw HTML or remote images', () => {
     const { container } = render(<ReportMarkdown content={'<script>alert(1)</script>\n\n![tracking](https://example.com/pixel.png)\n\n[link](javascript:alert(1))'} />)

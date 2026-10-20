@@ -11,6 +11,20 @@
   text-rendering: optimizeLegibility;
 }
 
+@theme {
+  --color-blue-500: #4c7bc4;
+  --color-blue-600: #315f9e;
+  --color-blue-700: #284d80;
+}
+
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+input[type="number"] {
+  font-variant-numeric: tabular-nums;
+}
+
 * {
   box-sizing: border-box;
 }

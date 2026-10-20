@@ -2,13 +2,36 @@ import { useEffect, useRef } from "react"
 
 export default function ConfirmDialog({ open, title, description, confirmLabel, busy, onConfirm, onCancel }) {
   const cancelButtonRef = useRef(null)
+  const dialogRef = useRef(null)
 
   useEffect(() => {
     if (!open) return undefined
-
+    const previousFocus = document.activeElement
     cancelButtonRef.current?.focus()
+    return () => { if (previousFocus?.isConnected) previousFocus.focus() }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return undefined
     function handleKeyDown(event) {
       if (event.key === "Escape" && !busy) onCancel()
+      if (event.key === "Tab") {
+        const buttons = [...dialogRef.current.querySelectorAll('button:not(:disabled)')]
+        if (!buttons.length) {
+          event.preventDefault()
+          dialogRef.current.focus()
+          return
+        }
+        const first = buttons[0]
+        const last = buttons[buttons.length - 1]
+        if (event.shiftKey && (document.activeElement === first || !buttons.includes(document.activeElement))) {
+          event.preventDefault()
+          last.focus()
+        } else if (!event.shiftKey && (document.activeElement === last || !buttons.includes(document.activeElement))) {
+          event.preventDefault()
+          first.focus()
+        }
+      }
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
@@ -19,15 +42,18 @@ export default function ConfirmDialog({ open, title, description, confirmLabel, 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/50 p-4">
       <div
-        className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900"
+        ref={dialogRef}
+        tabIndex={-1}
+        className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-description"
       >
         <h2 id="confirm-dialog-title" className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">
           {title}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{description}</p>
+        <p id="confirm-dialog-description" className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{description}</p>
         <div className="mt-6 flex justify-end gap-2">
           <button
             ref={cancelButtonRef}

@@ -90,8 +90,8 @@ export default function DayForm({ date, onCreated, onNavigationGuardChange }) {
       </div>
       <form onSubmit={handleSubmit} className="space-y-4 p-5">
         <fieldset disabled={submitting} className="space-y-4">
-        <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">Planeje antes de começar. Salve suas tarefas agora e marque os checkboxes conforme concluir. O tempo de estudo pode ser registrado depois.</p>
-        <label className="block text-sm font-medium">Tarefas planejadas — uma por linha
+        <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">Uma tarefa por linha. Registre o tempo de estudo depois.</p>
+        <label className="block text-sm font-medium">Tarefas planejadas
           <textarea rows={7} value={tasks} onChange={(event) => setTasks(event.target.value)} disabled={submitting} placeholder={'Estudar Python\nPraticar SQL\nLer um capítulo'} className="mt-2 w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700" />
         </label>
         <p className="text-xs text-zinc-500">{tasks.split('\n').filter((task) => task.trim()).length} tarefas · todas começam pendentes</p>

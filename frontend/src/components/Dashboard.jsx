@@ -1,4 +1,4 @@
-import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, Flame, ListChecks } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 
 import { getApiErrorMessage, getDay, getDaysByMonth } from "../api/client"
@@ -10,14 +10,13 @@ import {
 } from "../utils/date"
 import StatusMessage from "./StatusMessage"
 
-function StatCard({ label, value, helper, icon: Icon }) {
+function StatCard({ label, value, helper }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="px-5 py-5">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{label}</span>
-        <Icon size={18} className="text-blue-600" strokeWidth={1.8} />
       </div>
-      <p className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">{value}</p>
+      <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-zinc-950 dark:text-zinc-100">{value}</p>
       <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">{helper}</p>
     </div>
   )
@@ -130,30 +129,26 @@ export default function Dashboard({ onOpenDay }) {
         </div>
       ) : (
         <>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-6 grid border-y border-zinc-200 dark:border-zinc-800 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               label="Minutos estudados"
               value={loading ? "—" : metrics.totalMinutes}
               helper="Soma dos registros do período"
-              icon={BookOpen}
             />
             <StatCard
               label="Tarefas concluídas"
               value={loading ? "—" : `${metrics.completed}/${metrics.totalTasks}`}
               helper={`${metrics.percentage}% das tarefas cadastradas`}
-              icon={CheckCircle2}
             />
             <StatCard
               label="Maior sequência"
               value={loading ? "—" : `${metrics.streak} dias`}
               helper="Minutos acima de zero + ao menos 1 tarefa feita"
-              icon={Flame}
             />
             <StatCard
               label="Dias registrados"
               value={loading ? "—" : days.length}
-              helper="Registros detalhados carregados da API"
-              icon={ListChecks}
+              helper="Dias com registro no mês"
             />
           </div>
 
@@ -166,7 +161,6 @@ export default function Dashboard({ onOpenDay }) {
           <section className="mt-6 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900" aria-labelledby="activity-title">
             <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
               <h2 id="activity-title" className="font-semibold text-zinc-950 dark:text-zinc-100">Atividade diária</h2>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Estudo e execução classificados separadamente.</p>
             </div>
 
             {loading ? (
