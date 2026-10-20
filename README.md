@@ -28,7 +28,7 @@ It's also a project I'm using to learn and improve as I build it.
   Functions, mark topics and keep Markdown notes, examples and links beside them.
 
 The interface is in Portuguese and has light and dark themes. Planning, tasks
-and learning notes work without Gemini; only OCR and report comparisons use it.
+and learning notes work without AI. OCR and report comparisons use Gemini.
 
 ## Stack
 
@@ -57,7 +57,7 @@ GEMINI_COMPARISON_MODEL=gemini-3.6-flash
 API_BASE_URL=http://localhost:8000
 ```
 
-Use models available to your Gemini account. Keep the key in the backend `.env`.
+Use models available to your Gemini project. Keep the key in the backend `.env`.
 
 Before starting the API, create or update the database:
 
@@ -88,7 +88,7 @@ expose the API to the internet.
 
 ### Planning a day
 
-Click **Planejar amanhã**, or choose a date in the calendar. Add one task per
+Choose a date in the calendar, including future dates. Add one task per
 line and click **Salvar dia e tarefas**. Everything starts unchecked, with zero
 study minutes. During the day, check off tasks and use **Salvar minutos** to
 record the time you actually studied. The quote and other details are optional.

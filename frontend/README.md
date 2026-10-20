@@ -36,7 +36,7 @@ npm run build
 
 ## Current API constraints
 
-- Planning saves the day and its initial pending tasks together; use **Planejar amanhã** or choose any date.
+- Choose a date in the calendar to save the day and its initial pending tasks together.
 - Study minutes can be updated afterward; quote, author and type remain read-only.
 - Deleting a day removes its tasks first because the database relationship has no cascade delete.
 - Dashboard totals are calculated client-side from the month and day endpoints.

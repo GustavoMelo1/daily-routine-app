@@ -13,12 +13,12 @@ de commits. Ele guarda esses textos para você consultar e comparar semanas.
 4. Importe outra semana, selecione um relato anterior e clique em
    **Gerar comparação com IA**. O padrão é o relato anterior mais próximo.
 
-Importar, editar e ler relatos não chama Gemini. Gerar a comparação envia os dois
-textos ao Google e pode ter custo. Remova segredos antes de importar/comparar.
+Importar, editar e ler relatos não chama IA. Gerar a comparação envia os dois
+textos ao Gemini, sujeito aos limites e à cobrança do projeto. Remova segredos antes de comparar.
 A configuração usa `GEMINI_API_KEY` e `GEMINI_COMPARISON_MODEL` no backend;
-a chave nunca vai para o frontend. O modelo padrão acompanha o OCR existente
-(`gemini-3.6-flash`); altere a variável se sua conta usar outro modelo compatível
-com saída estruturada. [Referência do SDK](https://github.com/googleapis/python-genai).
+a chave nunca vai para o frontend. O padrão é `gemini-3.6-flash`, com saída estruturada
+e verificação das citações. O OCR também continua no Gemini.
+Comparações já salvas são reutilizadas, inclusive as geradas antes da troca.
 
 A resposta apresenta avanços documentados, práticas consolidadas e pendências,
 com trechos dos relatos. As citações são verificadas contra os textos antes de salvar.
@@ -59,5 +59,5 @@ deste marco. A API atual deve permanecer restrita ao computador do usuário.
 Backend: CRUD, validação, conflitos de versão/data, cache, invalidação, referências
 e falhas do provedor com SQLite temporário. Frontend: leitura de arquivo, segurança
 de Markdown, edição, geração explícita e erro com nova tentativa.
-Os testes não chamam Gemini. A qualidade da comparação real depende dos relatos
+Os testes não chamam provedores de IA. A qualidade da comparação real depende dos relatos
 e do modelo configurado, e precisa de revisão humana.
