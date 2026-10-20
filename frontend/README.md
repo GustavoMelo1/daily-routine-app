@@ -36,11 +36,14 @@ npm run build
 
 ## Current API constraints
 
-- Day fields are read-only after creation because the API has no day update route.
+- Planning saves the day and its initial pending tasks together; use **Planejar amanhã** or choose any date.
+- Study minutes can be updated afterward; quote, author and type remain read-only.
 - Deleting a day removes its tasks first because the database relationship has no cascade delete.
 - Dashboard totals are calculated client-side from the month and day endpoints.
 - The streak requires study minutes above zero and at least one completed task.
 - Weekly report edits invalidate comparisons that use the changed text.
 - Markdown preview skips raw HTML and external images.
+- Learning topics have nested checkboxes and local Markdown notes, with search and `.md` download.
+- Notes require explicit saving and reject edits from a stale version without replacing the draft.
 
 See [weekly evolution](../docs/weekly-evolution.md) for configuration and limits.
