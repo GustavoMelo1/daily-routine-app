@@ -152,6 +152,7 @@ function App() {
             onPrevious={() => handleSelectDate(shiftDate(cursorDate, view, -1))}
             onNext={() => handleSelectDate(shiftDate(cursorDate, view, 1))}
             onToday={() => handleSelectDate(new Date())}
+            onTomorrow={() => navigate(() => { setCursorDate(shiftDate(new Date(), 'day', 1)); setView('day') })}
           />
 
           {recordsError && (

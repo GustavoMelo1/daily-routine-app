@@ -11,6 +11,7 @@ import {
 import { formatLongDate } from "../utils/date"
 import ConfirmDialog from "./ConfirmDialog"
 import DayForm from "./DayForm"
+import StudyMinutes from './StudyMinutes'
 import StatusMessage from "./StatusMessage"
 
 function LoadingPanel() {
@@ -137,6 +138,7 @@ export default function DayPanel({ date, day, loading, error, onRetry, onChanged
       </div>
 
       <div className="space-y-5 p-5">
+        <StudyMinutes key={`${day.id}-${day.minutos_estudados}`} day={day} onChanged={onChanged} />
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950">
             <div className="flex items-center gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
@@ -241,7 +243,7 @@ export default function DayPanel({ date, day, loading, error, onRetry, onChanged
         {actionError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{actionError}</p>}
 
         <p className="border-t border-zinc-200 pt-4 text-xs leading-5 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-          Os dados principais do dia são somente leitura. Para alterá-los, exclua este registro e crie outro.
+          Você pode atualizar os minutos e marcar tarefas durante o dia. Frase, autor e tipo ainda não têm edição nesta tela.
         </p>
       </div>
 

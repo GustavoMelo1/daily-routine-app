@@ -13,7 +13,7 @@ const guides = {
     title: 'Como usar a agenda',
     steps: [
       ['Escolha um dia', 'Navegue por mês, semana ou dia. Selecione uma data para ver seus registros.'],
-      ['Registre sua rotina', 'Crie o dia no painel de detalhes e adicione tarefas. Marque o que foi concluído.'],
+      ['Planeje antes de começar', 'Use “Planejar amanhã”, escreva uma tarefa por linha e salve tudo junto. Depois marque o que concluiu e atualize os minutos estudados.'],
       ['Importe o caderno', 'Fotos vão na pasta backend/images do computador. A importação é feita pelo lote; esta tela não recebe fotos.'],
     ],
   },

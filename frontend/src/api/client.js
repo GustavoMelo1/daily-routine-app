@@ -3,6 +3,7 @@ const API_BASE_URL = (
 ).replace(/\/$/, "")
 
 export const listLearningNodes = (signal) => request('/learning-nodes', { signal })
+export const saveLearningNotes = (id, body) => request(`/learning-nodes/${id}/notes`, { method: 'PUT', body })
 export const createLearningNode = (body) => request('/learning-nodes', { method: 'POST', body })
 export const updateLearningNode = (id, body) => request(`/learning-nodes/${id}`, { method: 'PUT', body })
 export const deleteLearningNode = (id) => request(`/learning-nodes/${id}`, { method: 'DELETE' })
@@ -70,6 +71,9 @@ export async function getDay(date, signal) {
 export function createDay(day) {
   return request("/dias", { method: "POST", body: day })
 }
+
+export const createDayPlan = (body) => request('/dias/planejamento', { method: 'POST', body })
+export const updateDayMinutes = (date, minutes) => request(`/dias/${date}/minutos`, { method: 'PATCH', body: { minutos_estudados: minutes } })
 
 export function removeDay(date) {
   return request(`/dias/${date}`, { method: "DELETE" })

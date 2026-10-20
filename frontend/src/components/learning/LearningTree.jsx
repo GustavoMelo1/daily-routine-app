@@ -3,10 +3,11 @@ import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from 'lucide-react'
 import { listLearningNodes, createLearningNode, updateLearningNode, deleteLearningNode, getApiErrorMessage } from '../../api/client'
 import ConfirmDialog from '../ConfirmDialog'
 import StatusMessage from '../StatusMessage'
+import LearningNote from './LearningNote'
 
 const button = 'rounded-lg border border-zinc-300 px-3 py-2 text-sm hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800'
 
-function TreeNode({ node, childrenByParent, busy, onToggle, onEdit, onAdd, onDelete }) {
+function TreeNode({ node, childrenByParent, busy, onToggle, onEdit, onAdd, onDelete, onSelect, selectedId }) {
   const [expanded, setExpanded] = useState(true)
   const children = childrenByParent.get(node.id) || []
   return <li>
@@ -19,12 +20,13 @@ function TreeNode({ node, childrenByParent, busy, onToggle, onEdit, onAdd, onDel
         <span className={`break-words text-sm font-medium ${node.completed ? 'text-zinc-500 line-through dark:text-zinc-400' : ''}`}>{node.title}</span>
       </label>
       <div className="flex gap-1">
+        <button className={`${button} ${selectedId === node.id ? 'text-blue-600 dark:text-blue-400' : ''}`} disabled={busy} onClick={() => onSelect(node)} aria-label={`Abrir nota de ${node.title}`} aria-pressed={selectedId === node.id}>Nota</button>
         <button className={button} disabled={busy} onClick={() => onAdd(node)} aria-label={`Adicionar subtópico em ${node.title}`}><Plus size={15} /></button>
         <button className={button} disabled={busy} onClick={() => onEdit(node)} aria-label={`Renomear ${node.title}`}><Pencil size={15} /></button>
         <button className={button} disabled={busy} onClick={() => onDelete(node)} aria-label={`Excluir ${node.title}`}><Trash2 size={15} /></button>
       </div>
     </div>
-    {expanded && children.length > 0 && <ul className="ml-3 mt-2 space-y-2 border-l border-zinc-200 pl-3 dark:border-zinc-700 sm:ml-5">{children.map((child) => <TreeNode key={child.id} node={child} childrenByParent={childrenByParent} busy={busy} onToggle={onToggle} onEdit={onEdit} onAdd={onAdd} onDelete={onDelete} />)}</ul>}
+    {expanded && children.length > 0 && <ul className="ml-3 mt-2 space-y-2 border-l border-zinc-200 pl-3 dark:border-zinc-700 sm:ml-5">{children.map((child) => <TreeNode key={child.id} node={child} childrenByParent={childrenByParent} busy={busy} onToggle={onToggle} onEdit={onEdit} onAdd={onAdd} onDelete={onDelete} onSelect={onSelect} selectedId={selectedId} />)}</ul>}
   </li>
 }
 
@@ -38,14 +40,19 @@ export default function LearningTree({ onNavigationGuardChange }) {
   const [title, setTitle] = useState('')
   const [deleting, setDeleting] = useState(null)
   const [message, setMessage] = useState('')
+  const [selectedId, setSelectedId] = useState(null)
+  const [noteDirty, setNoteDirty] = useState(false)
+  const [noteBusy, setNoteBusy] = useState(false)
+  const [search, setSearch] = useState('')
+  const selected = nodes.find((node) => node.id === selectedId)
   const dirty = form !== null && title !== (form.node?.title || '')
   useEffect(() => {
-    const guard = () => !busy && (!dirty || window.confirm('Descartar o tópico não salvo?'))
+    const guard = () => !busy && !noteBusy && (!(dirty || noteDirty) || window.confirm('Descartar alterações não salvas?'))
     onNavigationGuardChange(guard)
-    function unload(event) { if (dirty || busy) { event.preventDefault(); event.returnValue = '' } }
+    function unload(event) { if (dirty || busy || noteDirty || noteBusy) { event.preventDefault(); event.returnValue = '' } }
     window.addEventListener('beforeunload', unload)
     return () => { onNavigationGuardChange(null); window.removeEventListener('beforeunload', unload) }
-  }, [dirty, busy, onNavigationGuardChange])
+  }, [dirty, busy, noteDirty, noteBusy, onNavigationGuardChange])
   useEffect(() => {
     const controller = new AbortController()
     setLoading(true)
@@ -62,6 +69,11 @@ export default function LearningTree({ onNavigationGuardChange }) {
   function openForm(next) {
     if (dirty && !window.confirm('Descartar o tópico não salvo?')) return
     setForm(next); setTitle(next.node?.title || ''); setMessage('')
+  }
+  function selectNote(node) {
+    if (node.id === selectedId || noteBusy) return
+    if (noteDirty && !window.confirm('Descartar as alterações da nota atual?')) return
+    setNoteDirty(false); setSelectedId(node.id)
   }
   async function mutate(action, success) {
     setBusy(true); setError(''); setMessage('')
@@ -101,6 +113,7 @@ export default function LearningTree({ onNavigationGuardChange }) {
     const ok = await mutate(async () => {
       await deleteLearningNode(deleting.id)
       setNodes((all) => all.filter((node) => !descendants.has(node.id)))
+      if (descendants.has(selectedId)) { setSelectedId(null); setNoteDirty(false) }
     }, 'Tópico e seus subtópicos excluídos.')
     if (ok) setDeleting(null)
   }
@@ -117,10 +130,19 @@ export default function LearningTree({ onNavigationGuardChange }) {
       <label className="block text-sm">Nome do tópico<input autoFocus required maxLength={160} value={title} disabled={busy} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Engenharia de dados, Python, Funções…" className="mt-2 w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700" /></label>
       <div className="flex gap-2"><button type="submit" className={button} disabled={busy || !title.trim()}>{busy ? 'Salvando…' : 'Salvar tópico'}</button><button type="button" disabled={busy} className={button} onClick={() => { if (!dirty || window.confirm('Descartar o tópico não salvo?')) setForm(null) }}>Cancelar</button></div>
     </form>}
-    {loading ? <p role="status" className="py-6">Carregando sua árvore…</p> : <>
+    {loading && !nodes.length ? <p role="status" className="py-6">Carregando sua árvore…</p> : <>
       <div className="my-4 flex items-center justify-between border-b border-zinc-200 pb-3 text-sm text-zinc-500 dark:border-zinc-800"><span>{(childrenByParent.get(null) || []).length} áreas</span><span>{completed} de {nodes.length} itens marcados · checklist pessoal</span></div>
       {!nodes.length && !error && <div className="rounded-xl border border-dashed border-zinc-300 p-8 dark:border-zinc-700"><h2 className="font-semibold">Por onde você quer começar?</h2><p className="mt-2 text-sm leading-7 text-zinc-500">Crie “Engenharia de dados”. Depois use o botão + para adicionar “Python” e, dentro dele, “Variáveis”, “Funções” e o que mais quiser aprender.</p></div>}
-      <div className="overflow-x-auto pb-4"><ul className="space-y-3">{(childrenByParent.get(null) || []).map((node) => <TreeNode key={node.id} node={node} childrenByParent={childrenByParent} busy={busy || Boolean(form)} onToggle={toggle} onEdit={(item) => openForm({ node: item })} onAdd={(parent) => openForm({ parent })} onDelete={setDeleting} />)}</ul></div>
+      <label className="mb-4 block text-sm font-medium">Buscar tópicos e notas<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Ex.: Python, SQL, parâmetros…" className="mt-2 w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700" /></label>
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="min-w-0 overflow-x-auto pb-4">
+          {search.trim() ? <ul className="space-y-2" aria-label="Resultados da busca">
+            {nodes.filter((node) => `${node.title} ${node.notes || ''}`.toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))).map((node) => <li key={node.id}><button disabled={noteBusy || busy || Boolean(form)} className={`${button} w-full text-left`} onClick={() => selectNote(node)}>{node.title}<span className="ml-2 text-xs text-zinc-500">{nodes.find((parent) => parent.id === node.parent_id)?.title || 'Área principal'}</span></button></li>)}
+            {!nodes.some((node) => `${node.title} ${node.notes || ''}`.toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))) && <li className="p-4 text-sm text-zinc-500">Nenhum tópico ou nota encontrado.</li>}
+          </ul> : <ul className="space-y-3">{(childrenByParent.get(null) || []).map((node) => <TreeNode key={node.id} node={node} childrenByParent={childrenByParent} busy={busy || noteBusy || Boolean(form)} onToggle={toggle} onEdit={(item) => openForm({ node: item })} onAdd={(parent) => openForm({ parent })} onSelect={selectNote} selectedId={selectedId} onDelete={(item) => { if (!noteDirty || window.confirm('A exclusão pode remover a nota em edição. Continuar?')) setDeleting(item) }} />)}</ul>}
+        </div>
+        {selected ? <LearningNote key={selected.id} node={selected} onDirtyChange={setNoteDirty} onBusyChange={setNoteBusy} onSaved={(id, result) => setNodes((all) => all.map((node) => node.id === id ? { ...node, ...result } : node))} /> : <div className="rounded-xl border border-dashed border-zinc-300 p-8 text-sm leading-7 text-zinc-500 dark:border-zinc-700"><h2 className="font-semibold text-zinc-800 dark:text-zinc-200">Um roteiro e um lugar para pensar</h2><p>Abra a nota de um tópico para registrar conceitos, exemplos e links. A árvore mostra para onde ir; as notas guardam o que você aprendeu.</p></div>}
+      </div>
     </>}
     <ConfirmDialog open={Boolean(deleting)} title={`Excluir ${deleting?.title || 'tópico'}?`} description={`Serão excluídos este item e seus subtópicos (${descendants.size} itens no total). Não é possível desfazer.`} confirmLabel="Excluir árvore" busy={busy} onConfirm={remove} onCancel={() => setDeleting(null)} />
   </section>

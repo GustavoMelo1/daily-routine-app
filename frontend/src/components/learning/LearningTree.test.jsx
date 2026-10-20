@@ -5,6 +5,7 @@ import LearningTree from './LearningTree'
 import * as api from '../../api/client'
 
 vi.mock('../../api/client', () => ({ listLearningNodes: vi.fn(), createLearningNode: vi.fn(),
+  saveLearningNotes: vi.fn(),
   updateLearningNode: vi.fn(), deleteLearningNode: vi.fn(), getApiErrorMessage: (e) => e.message }))
 const nodes = [{ id: 1, title: 'Dados', parent_id: null, completed: false },
   { id: 2, title: 'Python', parent_id: 1, completed: false },
@@ -46,4 +47,17 @@ it('preserves the checkbox when saving fails', async () => {
   await userEvent.click(await screen.findByRole('checkbox', { name: 'Python' }))
   expect(await screen.findByRole('alert')).toBeTruthy()
   expect(screen.getByRole('checkbox', { name: 'Python' }).checked).toBe(false)
+})
+
+it('searches notes and protects an unsaved draft when switching topics', async () => {
+  api.listLearningNodes.mockResolvedValue(nodes.map((node) => ({ ...node, notes: node.id === 2 ? 'Decoradores' : '', notes_version: 1 })))
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+  render(<LearningTree onNavigationGuardChange={() => {}} />)
+  await userEvent.click(await screen.findByRole('button', { name: 'Abrir nota de Python' }))
+  await userEvent.type(screen.getByLabelText('Anotações'), ' novo')
+  await userEvent.click(screen.getByRole('button', { name: 'Abrir nota de Funções' }))
+  expect(screen.getByLabelText('Anotações').value).toBe('Decoradores novo')
+  await userEvent.type(screen.getByRole('searchbox'), 'Decoradores')
+  expect(screen.getByRole('list', { name: 'Resultados da busca' }).textContent).toContain('Python')
+  confirm.mockRestore()
 })
