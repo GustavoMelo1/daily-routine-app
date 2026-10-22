@@ -9,28 +9,28 @@ from app.main import app
 
 @pytest.fixture
 def client(tmp_path):
-    caminho_banco = tmp_path / "teste.db"
-    caminho_schema = (
+    database_path = tmp_path / "teste.db"
+    schema_path = (
         Path(__file__).parent.parent / "db" / "schema.sql"
     )
 
-    conexao_inicial = sqlite3.connect(caminho_banco)
-    schema = caminho_schema.read_text(encoding="utf-8")
-    conexao_inicial.executescript(schema)
-    conexao_inicial.close()
+    setup_connection = sqlite3.connect(database_path)
+    schema = schema_path.read_text(encoding="utf-8")
+    setup_connection.executescript(schema)
+    setup_connection.close()
 
-    def conexao_teste():
-        con = sqlite3.connect(caminho_banco, check_same_thread=False)
-        con.execute("PRAGMA foreign_keys = ON")
+    def database_connection():
+        connection = sqlite3.connect(database_path, check_same_thread=False)
+        connection.execute("PRAGMA foreign_keys = ON")
         try:
-            yield con
+            yield connection
         finally:
-            con.close()
+            connection.close()
 
-    app.dependency_overrides[get_database_connection] = conexao_teste
+    app.dependency_overrides[get_database_connection] = database_connection
 
     try:
-        with TestClient(app) as cliente:
-            yield cliente
+        with TestClient(app) as test_client:
+            yield test_client
     finally:
         app.dependency_overrides.pop(get_database_connection, None)
