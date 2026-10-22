@@ -19,3 +19,5 @@ exemplo.jpeg
 /backend/images/
 /backend/logs/
 *.backup
+*.sqlite3
+/deploy/backups/
