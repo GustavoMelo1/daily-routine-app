@@ -1,7 +1,20 @@
 # M11 — Refactor planejado
 
 Pedido registrado em 30/09/2026. Este documento descreve trabalho futuro,
-não funcionalidades já implementadas. Continuar o M9 antes deste bloco.
+não funcionalidades já implementadas. Atualizado em 21/10/2026: concluir a
+verificação da hospedagem pessoal antes de iniciar mudanças estruturais.
+
+## Ordem dos próximos blocos
+
+1. Validar deploy, acesso restrito, persistência e recuperação de backup.
+2. Mapear o caminho imagem → OCR → validação → publicação e os testes atuais.
+3. Simplificar os testes da pipeline por cenário, preservando integração e isolamento da IA.
+4. Reorganizar módulos por responsabilidade, mantendo os contratos atuais.
+5. Planejar a tradução de tabelas e campos em uma migração separada, com cópia do banco.
+
+Não alterar schema, endpoints e organização de pastas no mesmo bloco. Cada
+bloco deve deixar o app utilizável e ter testes antes e depois. Hospedagem,
+correções de bugs e novas funcionalidades não contam como refactor.
 
 ## Objetivo
 

@@ -8,6 +8,8 @@ vulnerabilidades. Esta revisão do código não substitui um teste de segurança
 - Não há autenticação/autorização. Quem conseguir acessar a API pode alterar
   registros e solicitar operações com Gemini. Mantenha o servidor em
   `127.0.0.1`, sem exposição pública ou encaminhamento de portas. CORS não é login.
+  O pacote de [hospedagem pessoal](private-deployment.md) adiciona senha no proxy
+  e acesso por túnel SSH; a API isoladamente continua sem autenticação.
 - Excluir um dia pelo frontend remove tarefas em requisições separadas. Uma
   falha no meio pode deixar uma exclusão parcial. A publicação de imagens, por
   outro lado, é transacional por imagem.

@@ -200,6 +200,14 @@ npm run build
 
 Tests use temporary databases and simulated external responses. They don't call Gemini.
 
+## Private hosting
+
+For a single-user server, see [the private deployment guide](docs/private-deployment.md).
+It includes Docker Compose, password protection for both the site and API,
+persistent SQLite storage and a backup command. Access stays on the server's
+loopback interface through an SSH tunnel; this is not a public multi-user release.
+Container validation on the chosen server is still required.
+
 ## Still to work on
 
 The main workflows are there, but a few things still need attention:
