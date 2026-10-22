@@ -1,0 +1,63 @@
+name: daily-routine
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: deploy/backend.Dockerfile
+    restart: unless-stopped
+    environment:
+      DB_URL: /data/rotina.db
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_OCR_MODEL: ${GEMINI_OCR_MODEL:-gemini-3.6-flash}
+      GEMINI_COMPARISON_MODEL: ${GEMINI_COMPARISON_MODEL:-gemini-3.6-flash}
+      API_BASE_URL: http://127.0.0.1:8000
+    volumes:
+      - routine_data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/image-imports/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      APP_USER: ${APP_USER:?Defina APP_USER em deploy/.env}
+      APP_PASSWORD_HASH: ${APP_PASSWORD_HASH:?Defina APP_PASSWORD_HASH em deploy/.env}
+    depends_on:
+      api:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  routine_data:
